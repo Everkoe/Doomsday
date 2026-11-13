@@ -431,8 +431,8 @@
             nodo.connect(send).connect(eco);
           }
 
-          /** Latido de tambor grave de tráiler: caída de tono + chasquido de ruido. */
-          function latido(cuando, fuerza = 1) {
+          /** Latido de tambor grave de tráiler: caída de tono + chasquido de ruido opcional. */
+          function latido(cuando, fuerza = 1, conChasquido = true) {
             const osc = ctx.createOscillator();
             const env = ctx.createGain();
             osc.type = 'sine';
@@ -445,6 +445,7 @@
             conectar(env, 0.35);
             osc.start(cuando);
             osc.stop(cuando + 0.75);
+            if (!conChasquido) return;
 
             const golpe = ruido(0.12);
             const filtro = ctx.createBiquadFilter();
@@ -556,7 +557,7 @@
               rugido.nivel.gain.exponentialRampToValueAtTime(0.0001, ahora + 0.4);
               rugido.oscs.forEach((osc) => osc.stop(ahora + 0.5));
             }
-            latido(ahora, 1);
+            latido(ahora, 1, false);
 
             const sub = ctx.createOscillator();
             const subNivel = ctx.createGain();
