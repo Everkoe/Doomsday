@@ -368,10 +368,9 @@
         }
 
         /**
-         * Sonido de la intro sintetizado con Web Audio (sin archivos), al estilo de un tráiler:
-         * rugido grave disonante, latidos de tambor mientras se encienden las runas, carga con latidos
-         * que aceleran y un boom grave al abrirse el portal.
-         * Los tiempos van sincronizados con las animaciones CSS (segundos desde el inicio de la intro).
+         * Sonido corto de entrada (mismo que el de la app al confirmar): dos notas graves en quinta,
+         * sintetizadas con Web Audio. Suena al abrirse el portal si el navegador ya permite audio
+         * (o si se ha tocado/pulsado algo durante la intro); si no, la intro sigue en silencio.
          */
         function crearSonidoDoom() {
           const Contexto = window.AudioContext || window.webkitAudioContext;
@@ -382,238 +381,44 @@
           } catch {
             return null;
           }
-          const t0 = performance.now();
-          const LATIDOS = [0.35, 0.8, 1.25, 1.6];
-          let activo = false;
-          let fase = 'intro';
-          let rugido = null;
-
-          const salida = ctx.createDynamicsCompressor();
-          salida.threshold.value = -14;
-          salida.ratio.value = 6;
-          salida.connect(ctx.destination);
-          const master = ctx.createGain();
-          master.gain.value = 0.9;
-          master.connect(salida);
-          const eco = ctx.createConvolver();
-          eco.buffer = impulso(3.2);
-          const ecoNivel = ctx.createGain();
-          ecoNivel.gain.value = 0.35;
-          eco.connect(ecoNivel).connect(master);
-
-          function impulso(segundos) {
-            const largo = Math.floor(ctx.sampleRate * segundos);
-            const buffer = ctx.createBuffer(2, largo, ctx.sampleRate);
-            for (let c = 0; c < 2; c++) {
-              const datos = buffer.getChannelData(c);
-              for (let i = 0; i < largo; i++) datos[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / largo, 2.5);
-            }
-            return buffer;
-          }
-
-          function ruido(segundos) {
-            const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * segundos), ctx.sampleRate);
-            const datos = buffer.getChannelData(0);
-            for (let i = 0; i < datos.length; i++) datos[i] = Math.random() * 2 - 1;
-            const fuente = ctx.createBufferSource();
-            fuente.buffer = buffer;
-            return fuente;
-          }
-
-          /** Saturación para dar cuerpo "metálico" y agresivo a los graves. */
-          function distorsion(cantidad) {
-            const nodo = ctx.createWaveShaper();
-            const curva = new Float32Array(1024);
-            for (let i = 0; i < curva.length; i++) {
-              const x = (i / (curva.length - 1)) * 2 - 1;
-              curva[i] = ((1 + cantidad) * x) / (1 + cantidad * Math.abs(x));
-            }
-            nodo.curve = curva;
-            nodo.oversample = '4x';
-            return nodo;
-          }
-
-          function conectar(nodo, envio = 0.4) {
-            nodo.connect(master);
-            const send = ctx.createGain();
-            send.gain.value = envio;
-            nodo.connect(send).connect(eco);
-          }
-
-          /** Latido de tambor grave de tráiler: caída de tono + chasquido de ruido opcional. */
-          function latido(cuando, fuerza = 1, conChasquido = true) {
-            const osc = ctx.createOscillator();
-            const env = ctx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(130, cuando);
-            osc.frequency.exponentialRampToValueAtTime(48, cuando + 0.35);
-            // Armónico de "cuerpo" para que se oiga también en altavoces pequeños (portátil, móvil).
-            const cuerpo = ctx.createOscillator();
-            const cuerpoNivel = ctx.createGain();
-            cuerpo.type = 'triangle';
-            cuerpo.frequency.setValueAtTime(260, cuando);
-            cuerpo.frequency.exponentialRampToValueAtTime(96, cuando + 0.3);
-            cuerpoNivel.gain.setValueAtTime(0.0001, cuando);
-            cuerpoNivel.gain.exponentialRampToValueAtTime(0.35 * fuerza, cuando + 0.01);
-            cuerpoNivel.gain.exponentialRampToValueAtTime(0.0001, cuando + 0.45);
-            cuerpo.connect(cuerpoNivel);
-            conectar(cuerpoNivel, 0.3);
-            cuerpo.start(cuando);
-            cuerpo.stop(cuando + 0.5);
-            env.gain.setValueAtTime(0.0001, cuando);
-            env.gain.exponentialRampToValueAtTime(0.9 * fuerza, cuando + 0.01);
-            env.gain.exponentialRampToValueAtTime(0.0001, cuando + 0.7);
-            osc.connect(env);
-            conectar(env, 0.35);
-            osc.start(cuando);
-            osc.stop(cuando + 0.75);
-            if (!conChasquido) return;
-
-            const golpe = ruido(0.12);
-            const filtro = ctx.createBiquadFilter();
-            filtro.type = 'lowpass';
-            filtro.frequency.value = 900;
-            const nivel = ctx.createGain();
-            nivel.gain.setValueAtTime(0.35 * fuerza, cuando);
-            nivel.gain.exponentialRampToValueAtTime(0.0001, cuando + 0.1);
-            golpe.connect(filtro).connect(nivel);
-            conectar(nivel, 0.2);
-            golpe.start(cuando);
-          }
-
-          /** Rugido grave disonante que acompaña toda la intro, con un pulso lento. */
-          function iniciarRugido(ahora) {
-            const sat = distorsion(3);
-            const filtro = ctx.createBiquadFilter();
-            filtro.type = 'lowpass';
-            filtro.frequency.value = 320;
-            filtro.Q.value = 3;
-            const nivel = ctx.createGain();
-            nivel.gain.setValueAtTime(0.0001, ahora);
-            nivel.gain.exponentialRampToValueAtTime(0.32, ahora + 1.2);
-            const pulso = ctx.createGain();
-            pulso.gain.value = 0.75;
-            const lfo = ctx.createOscillator();
-            const lfoNivel = ctx.createGain();
-            lfo.frequency.value = 1.6;
-            lfoNivel.gain.value = 0.25;
-            lfo.connect(lfoNivel).connect(pulso.gain);
-            lfo.start(ahora);
-            const oscs = [55, 58.27, 36.71].map((f, i) => {
-              const osc = ctx.createOscillator();
-              osc.type = i === 2 ? 'sine' : 'sawtooth';
-              osc.frequency.value = f;
-              osc.connect(sat);
-              osc.start(ahora);
-              return osc;
-            });
-            sat.connect(filtro).connect(pulso).connect(nivel);
-            conectar(nivel, 0.2);
-            rugido = { filtro, nivel, oscs: [...oscs, lfo], lfo };
-          }
-
-          function arrancar() {
-            if (activo) return;
-            activo = true;
-            const ahora = ctx.currentTime + 0.02;
-            const pasado = (performance.now() - t0) / 1000;
-            iniciarRugido(ahora);
-            // Solo suenan los golpes que aún no han pasado en la animación.
-            const programar = (segundo, accion) => segundo >= pasado && accion(ahora + segundo - pasado);
-            LATIDOS.forEach((s, i) => programar(s, (t) => latido(t, 0.6 + i * 0.12)));
-            if (fase === 'carga') cargar(0.6);
-          }
+          const NOTAS = [
+            { frecuencia: 293.66, retraso: 0, duracion: 0.26, volumen: 0.07 },
+            { frecuencia: 440, retraso: 0.11, duracion: 0.34, volumen: 0.055 },
+          ];
+          let terminado = false;
 
           function intentar() {
-            if (activo || fase === 'fin') return;
-            const promesa = ctx.state === 'running' ? Promise.resolve() : ctx.resume();
-            promesa.then(() => ctx.state === 'running' && arrancar()).catch(() => {});
+            if (terminado || ctx.state === 'running') return;
+            ctx.resume().catch(() => {});
           }
 
-          /** Carga: el rugido se abre, los latidos aceleran y un siseo oscuro sube hasta el portal. */
-          function cargar(segundos) {
-            fase = 'carga';
-            if (!activo || !rugido) return;
-            const ahora = ctx.currentTime;
-            const fin = ahora + segundos;
-            rugido.filtro.frequency.setValueAtTime(rugido.filtro.frequency.value, ahora);
-            rugido.filtro.frequency.exponentialRampToValueAtTime(1400, fin);
-            rugido.nivel.gain.setValueAtTime(rugido.nivel.gain.value, ahora);
-            rugido.nivel.gain.linearRampToValueAtTime(0.5, fin);
-            rugido.lfo.frequency.setValueAtTime(1.6, ahora);
-            rugido.lfo.frequency.exponentialRampToValueAtTime(14, fin);
-
-            // Latidos cada vez más seguidos (número fijo de golpes: el bucle siempre termina).
-            const GOLPES_CARGA = 7;
-            let t = 0;
-            let paso = segundos * 0.3;
-            for (let i = 0; i < GOLPES_CARGA && t < segundos - 0.04; i++) {
-              latido(ahora + t, 0.55 + (t / segundos) * 0.45);
-              t += Math.max(paso, 0.06);
-              paso *= 0.7;
-            }
-
-            const siseo = ruido(segundos + 0.1);
-            const banda = ctx.createBiquadFilter();
-            banda.type = 'bandpass';
-            banda.Q.value = 2;
-            banda.frequency.setValueAtTime(120, ahora);
-            banda.frequency.exponentialRampToValueAtTime(1600, fin);
-            const nivel = ctx.createGain();
-            nivel.gain.setValueAtTime(0.0001, ahora);
-            nivel.gain.exponentialRampToValueAtTime(0.35, fin);
-            siseo.connect(banda).connect(nivel);
-            conectar(nivel, 0.3);
-            siseo.start(ahora);
-            siseo.stop(fin + 0.05);
-          }
-
-          /** Portal: golpe grave limpio y caída sub-grave, con cola de eco. */
           function estallar() {
-            fase = 'fin';
-            if (!activo) return;
-            const ahora = ctx.currentTime;
-            if (rugido) {
-              rugido.nivel.gain.cancelScheduledValues(ahora);
-              rugido.nivel.gain.setValueAtTime(rugido.nivel.gain.value, ahora);
-              rugido.nivel.gain.exponentialRampToValueAtTime(0.0001, ahora + 0.4);
-              rugido.oscs.forEach((osc) => osc.stop(ahora + 0.5));
-            }
-            latido(ahora, 1, false);
-
-            const sub = ctx.createOscillator();
-            const subNivel = ctx.createGain();
-            sub.type = 'sine';
-            sub.frequency.setValueAtTime(90, ahora);
-            sub.frequency.exponentialRampToValueAtTime(32, ahora + 1.6);
-            subNivel.gain.setValueAtTime(0.9, ahora);
-            subNivel.gain.exponentialRampToValueAtTime(0.0001, ahora + 2.4);
-            sub.connect(subNivel);
-            conectar(subNivel, 0.2);
-            sub.start(ahora);
-            sub.stop(ahora + 2.5);
-
-            // Capa media del boom: lo que hace que se oiga en altavoces pequeños.
-            const cuerpo = ctx.createOscillator();
-            const cuerpoNivel = ctx.createGain();
-            cuerpo.type = 'triangle';
-            cuerpo.frequency.setValueAtTime(190, ahora);
-            cuerpo.frequency.exponentialRampToValueAtTime(62, ahora + 1.2);
-            cuerpoNivel.gain.setValueAtTime(0.5, ahora);
-            cuerpoNivel.gain.exponentialRampToValueAtTime(0.0001, ahora + 1.8);
-            cuerpo.connect(cuerpoNivel);
-            conectar(cuerpoNivel, 0.35);
-            cuerpo.start(ahora);
-            cuerpo.stop(ahora + 1.9);
+            if (terminado || ctx.state !== 'running') return;
+            const inicio = ctx.currentTime + 0.02;
+            NOTAS.forEach(({ frecuencia, retraso, duracion, volumen }) => {
+              const comienzo = inicio + retraso;
+              const fin = comienzo + duracion;
+              [['sine', 1, 1], ['triangle', 0.5, 0.45]].forEach(([tipo, multiplo, peso]) => {
+                const osc = ctx.createOscillator();
+                const nivel = ctx.createGain();
+                osc.type = tipo;
+                osc.frequency.value = frecuencia * multiplo;
+                nivel.gain.setValueAtTime(0, comienzo);
+                nivel.gain.linearRampToValueAtTime(volumen * peso, comienzo + 0.02);
+                nivel.gain.exponentialRampToValueAtTime(0.0001, fin);
+                osc.connect(nivel).connect(ctx.destination);
+                osc.start(comienzo);
+                osc.stop(fin + 0.02);
+              });
+            });
           }
 
-          /** Libera el audio cuando termina la cola del estallido. */
           function cerrar() {
-            fase = 'fin';
-            setTimeout(() => ctx.close().catch(() => {}), activo ? 3800 : 0);
+            terminado = true;
+            setTimeout(() => ctx.close().catch(() => {}), 800);
           }
 
-          return { intentar, cargar, estallar, cerrar };
+          return { intentar, cargar() {}, estallar, cerrar };
         }
       })();
     </script>
