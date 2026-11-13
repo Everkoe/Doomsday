@@ -1,0 +1,32 @@
+// Fuente única de identificadores externos por producción.
+// wiki: páginas de Wikipedia (en) candidatas, en orden de preferencia.
+// tmdb: { type: 'movie' | 'tv', id, season? } para el script opcional de TMDB.
+export const MEDIA_SOURCES = {
+  'captain-america-first-avenger': { wiki: ['Captain_America:_The_First_Avenger'], tmdb: { type: 'movie', id: 1771 } },
+  'the-avengers': { wiki: ['The_Avengers_(2012_film)'], tmdb: { type: 'movie', id: 24428 } },
+  'winter-soldier': { wiki: ['Captain_America:_The_Winter_Soldier'], tmdb: { type: 'movie', id: 100402 } },
+  'guardians-vol-1': { wiki: ['Guardians_of_the_Galaxy_(film)'], tmdb: { type: 'movie', id: 118340 } },
+  'guardians-vol-2': { wiki: ['Guardians_of_the_Galaxy_Vol._2'], tmdb: { type: 'movie', id: 283995 } },
+  'age-of-ultron': { wiki: ['Avengers:_Age_of_Ultron'], tmdb: { type: 'movie', id: 99861 } },
+  'civil-war': { wiki: ['Captain_America:_Civil_War'], tmdb: { type: 'movie', id: 271110 } },
+  'black-widow': { wiki: ['Black_Widow_(2021_film)'], tmdb: { type: 'movie', id: 497698 } },
+  'black-panther': { wiki: ['Black_Panther_(film)'], tmdb: { type: 'movie', id: 284054 } },
+  'doctor-strange': { wiki: ['Doctor_Strange_(2016_film)'], tmdb: { type: 'movie', id: 284052 } },
+  'infinity-war': { wiki: ['Avengers:_Infinity_War'], tmdb: { type: 'movie', id: 299536 } },
+  endgame: { wiki: ['Avengers:_Endgame'], tmdb: { type: 'movie', id: 299534 } },
+  loki: { wiki: ['Loki_season_1', 'Loki_(TV_series)'], tmdb: { type: 'tv', id: 84958 } },
+  wandavision: { wiki: ['WandaVision'], tmdb: { type: 'tv', id: 85271 } },
+  'falcon-winter-soldier': { wiki: ['The_Falcon_and_the_Winter_Soldier'], tmdb: { type: 'tv', id: 88396 } },
+  'shang-chi': { wiki: ['Shang-Chi_and_the_Legend_of_the_Ten_Rings'], tmdb: { type: 'movie', id: 566525 } },
+  'no-way-home': { wiki: ['Spider-Man:_No_Way_Home'], tmdb: { type: 'movie', id: 634649 } },
+  'multiverse-of-madness': { wiki: ['Doctor_Strange_in_the_Multiverse_of_Madness'], tmdb: { type: 'movie', id: 453395 } },
+  'wakanda-forever': { wiki: ['Black_Panther:_Wakanda_Forever'], tmdb: { type: 'movie', id: 505642 } },
+  'guardians-vol-3': { wiki: ['Guardians_of_the_Galaxy_Vol._3'], tmdb: { type: 'movie', id: 447365 } },
+  'agatha-all-along': { wiki: ['Agatha_All_Along'], tmdb: { type: 'tv', id: 138501 } },
+  'deadpool-wolverine': { wiki: ['Deadpool_&_Wolverine'], tmdb: { type: 'movie', id: 533535 } },
+  'brave-new-world': { wiki: ['Captain_America:_Brave_New_World'], tmdb: { type: 'movie', id: 822119 } },
+  thunderbolts: { wiki: ['Thunderbolts*'], tmdb: { type: 'movie', id: 986056 } },
+  visionquest: { wiki: ['VisionQuest'], tmdb: { type: 'tv', id: 213375 } },
+  'fantastic-four': { wiki: ['The_Fantastic_Four:_First_Steps'], tmdb: { type: 'movie', id: 617126 } },
+  doomsday: { wiki: ['Avengers:_Doomsday'], tmdb: { type: 'movie', id: 1003596 } },
+};

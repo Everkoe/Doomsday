@@ -1,0 +1,492 @@
+{
+  "captain-america-first-avenger": {
+    "source": {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Captain_America%3A_The_First_Avenger"
+    },
+    "poster": "/media/tmdb/captain-america-first-avenger-poster.jpg",
+    "posterSize": [
+      780,
+      1170
+    ],
+    "backdrop": "/media/tmdb/captain-america-first-avenger-backdrop.jpg",
+    "runtimeMinutes": 125,
+    "tmdb": {
+      "type": "movie",
+      "id": 1771,
+      "url": "https://www.themoviedb.org/movie/1771"
+    }
+  },
+  "the-avengers": {
+    "source": {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/The_Avengers_(2012_film)"
+    },
+    "poster": "/media/tmdb/the-avengers-poster.jpg",
+    "posterSize": [
+      780,
+      1170
+    ],
+    "backdrop": "/media/tmdb/the-avengers-backdrop.jpg",
+    "runtimeMinutes": 143,
+    "tmdb": {
+      "type": "movie",
+      "id": 24428,
+      "url": "https://www.themoviedb.org/movie/24428"
+    }
+  },
+  "winter-soldier": {
+    "source": {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Captain_America%3A_The_Winter_Soldier"
+    },
+    "poster": "/media/tmdb/winter-soldier-poster.jpg",
+    "posterSize": [
+      780,
+      1170
+    ],
+    "backdrop": "/media/tmdb/winter-soldier-backdrop.jpg",
+    "runtimeMinutes": 136,
+    "tmdb": {
+      "type": "movie",
+      "id": 100402,
+      "url": "https://www.themoviedb.org/movie/100402"
+    }
+  },
+  "guardians-vol-1": {
+    "source": {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Guardians_of_the_Galaxy_(film)"
+    },
+    "poster": "/media/tmdb/guardians-vol-1-poster.jpg",
+    "posterSize": [
+      780,
+      1170
+    ],
+    "backdrop": "/media/tmdb/guardians-vol-1-backdrop.jpg",
+    "runtimeMinutes": 121,
+    "tmdb": {
+      "type": "movie",
+      "id": 118340,
+      "url": "https://www.themoviedb.org/movie/118340"
+    }
+  },
+  "guardians-vol-2": {
+    "source": {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Guardians_of_the_Galaxy_Vol._2"
+    },
+    "poster": "/media/tmdb/guardians-vol-2-poster.jpg",
+    "posterSize": [
+      780,
+      1170
+    ],
+    "backdrop": "/media/tmdb/guardians-vol-2-backdrop.jpg",
+    "runtimeMinutes": 137,
+    "tmdb": {
+      "type": "movie",
+      "id": 283995,
+      "url": "https://www.themoviedb.org/movie/283995"
+    }
+  },
+  "age-of-ultron": {
+    "source": {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Avengers%3A_Age_of_Ultron"
+    },
+    "poster": "/media/tmdb/age-of-ultron-poster.jpg",
+    "posterSize": [
+      780,
+      1170
+    ],
+    "backdrop": "/media/tmdb/age-of-ultron-backdrop.jpg",
+    "runtimeMinutes": 141,
+    "tmdb": {
+      "type": "movie",
+      "id": 99861,
+      "url": "https://www.themoviedb.org/movie/99861"
+    }
+  },
+  "civil-war": {
+    "source": {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Captain_America%3A_Civil_War"
+    },
+    "poster": "/media/tmdb/civil-war-poster.jpg",
+    "posterSize": [
+      780,
+      1170
+    ],
+    "backdrop": "/media/tmdb/civil-war-backdrop.jpg",
+    "runtimeMinutes": 147,
+    "tmdb": {
+      "type": "movie",
+      "id": 271110,
+      "url": "https://www.themoviedb.org/movie/271110"
+    }
+  },
+  "black-widow": {
+    "source": {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Black_Widow_(2021_film)"
+    },
+    "poster": "/media/tmdb/black-widow-poster.jpg",
+    "posterSize": [
+      780,
+      1170
+    ],
+    "backdrop": "/media/tmdb/black-widow-backdrop.jpg",
+    "runtimeMinutes": 134,
+    "tmdb": {
+      "type": "movie",
+      "id": 497698,
+      "url": "https://www.themoviedb.org/movie/497698"
+    }
+  },
+  "black-panther": {
+    "source": {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Black_Panther_(film)"
+    },
+    "poster": "/media/tmdb/black-panther-poster.jpg",
+    "posterSize": [
+      780,
+      1170
+    ],
+    "backdrop": "/media/tmdb/black-panther-backdrop.jpg",
+    "runtimeMinutes": 134,
+    "tmdb": {
+      "type": "movie",
+      "id": 284054,
+      "url": "https://www.themoviedb.org/movie/284054"
+    }
+  },
+  "doctor-strange": {
+    "source": {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Doctor_Strange_(2016_film)"
+    },
+    "poster": "/media/tmdb/doctor-strange-poster.jpg",
+    "posterSize": [
+      780,
+      1170
+    ],
+    "backdrop": "/media/tmdb/doctor-strange-backdrop.jpg",
+    "runtimeMinutes": 115,
+    "tmdb": {
+      "type": "movie",
+      "id": 284052,
+      "url": "https://www.themoviedb.org/movie/284052"
+    }
+  },
+  "infinity-war": {
+    "source": {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Avengers%3A_Infinity_War"
+    },
+    "poster": "/media/tmdb/infinity-war-poster.jpg",
+    "posterSize": [
+      780,
+      1170
+    ],
+    "backdrop": "/media/tmdb/infinity-war-backdrop.jpg",
+    "runtimeMinutes": 149,
+    "tmdb": {
+      "type": "movie",
+      "id": 299536,
+      "url": "https://www.themoviedb.org/movie/299536"
+    }
+  },
+  "endgame": {
+    "source": {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Avengers%3A_Endgame"
+    },
+    "poster": "/media/tmdb/endgame-poster.jpg",
+    "posterSize": [
+      780,
+      1170
+    ],
+    "backdrop": "/media/tmdb/endgame-backdrop.jpg",
+    "runtimeMinutes": 180,
+    "tmdb": {
+      "type": "movie",
+      "id": 299534,
+      "url": "https://www.themoviedb.org/movie/299534"
+    }
+  },
+  "loki": {
+    "source": {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Loki_season_1"
+    },
+    "poster": "/media/tmdb/loki-poster.jpg",
+    "posterSize": [
+      780,
+      1170
+    ],
+    "backdrop": "/media/tmdb/loki-backdrop.jpg",
+    "runtimeMinutes": 615,
+    "tmdb": {
+      "type": "tv",
+      "id": 84958,
+      "url": "https://www.themoviedb.org/tv/84958"
+    }
+  },
+  "wandavision": {
+    "source": {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/WandaVision"
+    },
+    "logo": "/media/logos/wandavision.png",
+    "poster": "/media/tmdb/wandavision-poster.jpg",
+    "posterSize": [
+      780,
+      1170
+    ],
+    "backdrop": "/media/tmdb/wandavision-backdrop.jpg",
+    "runtimeMinutes": 363,
+    "tmdb": {
+      "type": "tv",
+      "id": 85271,
+      "url": "https://www.themoviedb.org/tv/85271"
+    }
+  },
+  "falcon-winter-soldier": {
+    "source": {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/The_Falcon_and_the_Winter_Soldier"
+    },
+    "logo": "/media/logos/falcon-winter-soldier.png",
+    "poster": "/media/tmdb/falcon-winter-soldier-poster.jpg",
+    "posterSize": [
+      780,
+      1170
+    ],
+    "backdrop": "/media/tmdb/falcon-winter-soldier-backdrop.jpg",
+    "runtimeMinutes": 330,
+    "tmdb": {
+      "type": "tv",
+      "id": 88396,
+      "url": "https://www.themoviedb.org/tv/88396"
+    }
+  },
+  "shang-chi": {
+    "source": {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Shang-Chi_and_the_Legend_of_the_Ten_Rings"
+    },
+    "poster": "/media/tmdb/shang-chi-poster.jpg",
+    "posterSize": [
+      780,
+      1170
+    ],
+    "backdrop": "/media/tmdb/shang-chi-backdrop.jpg",
+    "runtimeMinutes": 132,
+    "tmdb": {
+      "type": "movie",
+      "id": 566525,
+      "url": "https://www.themoviedb.org/movie/566525"
+    }
+  },
+  "no-way-home": {
+    "source": {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Spider-Man%3A_No_Way_Home"
+    },
+    "poster": "/media/tmdb/no-way-home-poster.jpg",
+    "posterSize": [
+      780,
+      1170
+    ],
+    "backdrop": "/media/tmdb/no-way-home-backdrop.jpg",
+    "runtimeMinutes": 148,
+    "tmdb": {
+      "type": "movie",
+      "id": 634649,
+      "url": "https://www.themoviedb.org/movie/634649"
+    }
+  },
+  "multiverse-of-madness": {
+    "source": {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Doctor_Strange_in_the_Multiverse_of_Madness"
+    },
+    "poster": "/media/tmdb/multiverse-of-madness-poster.jpg",
+    "posterSize": [
+      780,
+      1170
+    ],
+    "backdrop": "/media/tmdb/multiverse-of-madness-backdrop.jpg",
+    "runtimeMinutes": 126,
+    "tmdb": {
+      "type": "movie",
+      "id": 453395,
+      "url": "https://www.themoviedb.org/movie/453395"
+    }
+  },
+  "wakanda-forever": {
+    "source": {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Black_Panther%3A_Wakanda_Forever"
+    },
+    "poster": "/media/tmdb/wakanda-forever-poster.jpg",
+    "posterSize": [
+      780,
+      1170
+    ],
+    "backdrop": "/media/tmdb/wakanda-forever-backdrop.jpg",
+    "runtimeMinutes": 162,
+    "tmdb": {
+      "type": "movie",
+      "id": 505642,
+      "url": "https://www.themoviedb.org/movie/505642"
+    }
+  },
+  "guardians-vol-3": {
+    "source": {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Guardians_of_the_Galaxy_Vol._3"
+    },
+    "poster": "/media/tmdb/guardians-vol-3-poster.jpg",
+    "posterSize": [
+      780,
+      1170
+    ],
+    "backdrop": "/media/tmdb/guardians-vol-3-backdrop.jpg",
+    "runtimeMinutes": 150,
+    "tmdb": {
+      "type": "movie",
+      "id": 447365,
+      "url": "https://www.themoviedb.org/movie/447365"
+    }
+  },
+  "agatha-all-along": {
+    "source": {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Agatha_All_Along"
+    },
+    "logo": "/media/logos/agatha-all-along.jpg",
+    "poster": "/media/tmdb/agatha-all-along-poster.jpg",
+    "posterSize": [
+      780,
+      1170
+    ],
+    "backdrop": "/media/tmdb/agatha-all-along-backdrop.jpg",
+    "runtimeMinutes": 379,
+    "tmdb": {
+      "type": "tv",
+      "id": 138501,
+      "url": "https://www.themoviedb.org/tv/138501"
+    }
+  },
+  "deadpool-wolverine": {
+    "source": {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Deadpool_%26_Wolverine"
+    },
+    "poster": "/media/tmdb/deadpool-wolverine-poster.jpg",
+    "posterSize": [
+      780,
+      1170
+    ],
+    "backdrop": "/media/tmdb/deadpool-wolverine-backdrop.jpg",
+    "runtimeMinutes": 128,
+    "tmdb": {
+      "type": "movie",
+      "id": 533535,
+      "url": "https://www.themoviedb.org/movie/533535"
+    }
+  },
+  "brave-new-world": {
+    "source": {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Captain_America%3A_Brave_New_World"
+    },
+    "poster": "/media/tmdb/brave-new-world-poster.jpg",
+    "posterSize": [
+      780,
+      1170
+    ],
+    "backdrop": "/media/tmdb/brave-new-world-backdrop.jpg",
+    "runtimeMinutes": 119,
+    "tmdb": {
+      "type": "movie",
+      "id": 822119,
+      "url": "https://www.themoviedb.org/movie/822119"
+    }
+  },
+  "thunderbolts": {
+    "source": {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Thunderbolts*"
+    },
+    "poster": "/media/tmdb/thunderbolts-poster.jpg",
+    "posterSize": [
+      780,
+      1170
+    ],
+    "backdrop": "/media/tmdb/thunderbolts-backdrop.jpg",
+    "runtimeMinutes": 127,
+    "tmdb": {
+      "type": "movie",
+      "id": 986056,
+      "url": "https://www.themoviedb.org/movie/986056"
+    }
+  },
+  "visionquest": {
+    "source": {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/VisionQuest"
+    },
+    "logo": "/media/logos/visionquest.jpg",
+    "poster": "/media/tmdb/visionquest-poster.jpg",
+    "posterSize": [
+      780,
+      1170
+    ],
+    "backdrop": "/media/tmdb/visionquest-backdrop.jpg",
+    "runtimeMinutes": 451,
+    "tmdb": {
+      "type": "tv",
+      "id": 213375,
+      "url": "https://www.themoviedb.org/tv/213375"
+    }
+  },
+  "fantastic-four": {
+    "source": {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/The_Fantastic_Four%3A_First_Steps"
+    },
+    "poster": "/media/tmdb/fantastic-four-poster.jpg",
+    "posterSize": [
+      780,
+      1170
+    ],
+    "backdrop": "/media/tmdb/fantastic-four-backdrop.jpg",
+    "runtimeMinutes": 115,
+    "tmdb": {
+      "type": "movie",
+      "id": 617126,
+      "url": "https://www.themoviedb.org/movie/617126"
+    }
+  },
+  "doomsday": {
+    "source": {
+      "name": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Avengers%3A_Doomsday"
+    },
+    "poster": "/media/tmdb/doomsday-poster.jpg",
+    "posterSize": [
+      780,
+      1170
+    ],
+    "backdrop": "/media/tmdb/doomsday-backdrop.jpg",
+    "runtimeMinutes": 165,
+    "tmdb": {
+      "type": "movie",
+      "id": 1003596,
+      "url": "https://www.themoviedb.org/movie/1003596"
+    }
+  }
+}
