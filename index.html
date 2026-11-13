@@ -349,7 +349,7 @@
         }
 
         /**
-         * Sonido corto de entrada (mismo que el de la app al confirmar): dos notas graves en quinta,
+         * Sonido corto de entrada (mismo que el de la app al confirmar): un golpe de campana grave,
          * sintetizadas con Web Audio. Suena al abrirse el portal si el navegador ya permite audio
          * (o si se ha tocado/pulsado algo durante la intro); si no, la intro sigue en silencio.
          */
@@ -362,9 +362,14 @@
           } catch {
             return null;
           }
-          const NOTAS = [
-            { frecuencia: 220, retraso: 0, duracion: 0.3, volumen: 0.08 },
-            { frecuencia: 329.63, retraso: 0.12, duracion: 0.38, volumen: 0.06 },
+          // Campana grave (La2): fundamental + armónicos inarmónicos que se apagan antes.
+          const FRECUENCIA = 110;
+          const VOLUMEN = 0.09;
+          const PARCIALES = [
+            { multiplo: 1, peso: 1, duracion: 0.8 },
+            { multiplo: 2, peso: 0.3, duracion: 0.4 },
+            { multiplo: 2.76, peso: 0.3, duracion: 0.4 },
+            { multiplo: 5.4, peso: 0.12, duracion: 0.27 },
           ];
           let terminado = false;
 
@@ -375,28 +380,25 @@
 
           function estallar() {
             if (terminado || ctx.state !== 'running') return;
-            const inicio = ctx.currentTime + 0.02;
-            NOTAS.forEach(({ frecuencia, retraso, duracion, volumen }) => {
-              const comienzo = inicio + retraso;
+            const comienzo = ctx.currentTime + 0.02;
+            PARCIALES.forEach(({ multiplo, peso, duracion }) => {
               const fin = comienzo + duracion;
-              [['sine', 1, 1], ['triangle', 0.5, 0.45]].forEach(([tipo, multiplo, peso]) => {
-                const osc = ctx.createOscillator();
-                const nivel = ctx.createGain();
-                osc.type = tipo;
-                osc.frequency.value = frecuencia * multiplo;
-                nivel.gain.setValueAtTime(0, comienzo);
-                nivel.gain.linearRampToValueAtTime(volumen * peso, comienzo + 0.02);
-                nivel.gain.exponentialRampToValueAtTime(0.0001, fin);
-                osc.connect(nivel).connect(ctx.destination);
-                osc.start(comienzo);
-                osc.stop(fin + 0.02);
-              });
+              const osc = ctx.createOscillator();
+              const nivel = ctx.createGain();
+              osc.type = 'sine';
+              osc.frequency.value = FRECUENCIA * multiplo;
+              nivel.gain.setValueAtTime(0, comienzo);
+              nivel.gain.linearRampToValueAtTime(VOLUMEN * peso, comienzo + 0.015);
+              nivel.gain.exponentialRampToValueAtTime(0.0001, fin);
+              osc.connect(nivel).connect(ctx.destination);
+              osc.start(comienzo);
+              osc.stop(fin + 0.02);
             });
           }
 
           function cerrar() {
             terminado = true;
-            setTimeout(() => ctx.close().catch(() => {}), 800);
+            setTimeout(() => ctx.close().catch(() => {}), 1100);
           }
 
           return { intentar, cargar() {}, estallar, cerrar };
