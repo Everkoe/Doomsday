@@ -6,6 +6,7 @@ import { CATALOG } from '../data/catalog';
 import { DOOMSDAY } from '../data/sagas';
 import { useProgress } from '../hooks/useProgress';
 import { getMedia } from '../lib/media';
+import { playConfirmSound } from '../lib/sound';
 import { ProgressBar } from './ProgressIndicator';
 
 const WALL_COLUMNS = 5;
@@ -113,7 +114,11 @@ export function Hero({ onOpen }: { onOpen: (id: string) => void }) {
             <motion.button
               type="button"
               whileTap={{ scale: 0.97 }}
-              onClick={() => stats.nextUp && onOpen(stats.nextUp.id)}
+              onClick={() => {
+                if (!stats.nextUp) return;
+                playConfirmSound();
+                onOpen(stats.nextUp.id);
+              }}
               disabled={!stats.nextUp}
               className="inline-flex h-12 items-center justify-center gap-2.5 rounded-md bg-snow px-6 text-sm font-semibold uppercase tracking-[0.12em] text-ink transition-colors hover:bg-white disabled:opacity-50"
             >

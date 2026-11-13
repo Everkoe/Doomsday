@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { Check, Plus, RotateCcw, SkipForward } from 'lucide-react';
 import { useProgress } from '../hooks/useProgress';
+import { playConfirmSound } from '../lib/sound';
 import type { WatchStatus } from '../types';
 
 type Props = {
@@ -19,8 +20,12 @@ const NEXT_STATUS: Record<WatchStatus, WatchStatus> = { pending: 'watched', watc
 export function WatchStatusButton({ id, variant = 'primary', className = '' }: Props) {
   const { getStatus, setStatus } = useProgress();
   const status = getStatus(id);
+  const change = (next: WatchStatus) => {
+    if (next === 'watched') playConfirmSound();
+    setStatus(id, next);
+  };
 
-  if (variant === 'toggles') return <StatusToggles status={status} onChange={(s) => setStatus(id, s)} />;
+  if (variant === 'toggles') return <StatusToggles status={status} onChange={change} />;
 
   if (variant === 'icon') {
     const isWatched = status === 'watched';
@@ -31,7 +36,7 @@ export function WatchStatusButton({ id, variant = 'primary', className = '' }: P
         whileTap={{ scale: 0.88 }}
         onClick={(e) => {
           e.stopPropagation();
-          setStatus(id, NEXT_STATUS[status]);
+          change(NEXT_STATUS[status]);
         }}
         aria-label={label}
         title={label}
@@ -51,7 +56,7 @@ export function WatchStatusButton({ id, variant = 'primary', className = '' }: P
     <motion.button
       type="button"
       whileTap={{ scale: 0.96 }}
-      onClick={() => setStatus(id, NEXT_STATUS[status])}
+      onClick={() => change(NEXT_STATUS[status])}
       className={`relative inline-flex h-12 items-center justify-center gap-2 overflow-hidden rounded-md px-6 text-sm font-semibold uppercase tracking-[0.12em] transition-colors ${
         isWatched ? 'bg-watched text-ink hover:bg-watched/90' : 'bg-snow text-ink hover:bg-white'
       } ${className}`}
