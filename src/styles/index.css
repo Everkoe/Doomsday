@@ -107,14 +107,30 @@
 .doom-aura {
   background: radial-gradient(closest-side, rgba(61, 220, 132, 0.42), rgba(15, 122, 69, 0.18) 55%, transparent 100%);
   filter: blur(28px);
+  will-change: transform, opacity;
   animation: doom-aura 4.5s ease-in-out infinite;
 }
 
 .doom-marco {
   box-shadow:
-    0 0 0 1px rgba(61, 220, 132, 0.55),
-    0 0 22px 2px rgba(61, 220, 132, 0.35),
+    0 0 0 1px rgba(61, 220, 132, 0.45),
+    0 0 16px 1px rgba(61, 220, 132, 0.25),
     0 40px 80px -24px rgba(0, 0, 0, 0.9);
+}
+
+/* El pulso solo anima la opacidad de una capa con el brillo fuerte (no repinta la sombra en cada frame). */
+.doom-marco::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    0 0 0 1px rgba(61, 220, 132, 0.8),
+    0 0 32px 4px rgba(61, 220, 132, 0.5);
+  opacity: 0;
+  will-change: opacity;
   animation: doom-marco 4.5s ease-in-out infinite;
 }
 
@@ -133,16 +149,10 @@
 @keyframes doom-marco {
   0%,
   100% {
-    box-shadow:
-      0 0 0 1px rgba(61, 220, 132, 0.45),
-      0 0 16px 1px rgba(61, 220, 132, 0.25),
-      0 40px 80px -24px rgba(0, 0, 0, 0.9);
+    opacity: 0;
   }
   50% {
-    box-shadow:
-      0 0 0 1px rgba(61, 220, 132, 0.8),
-      0 0 32px 4px rgba(61, 220, 132, 0.5),
-      0 40px 80px -24px rgba(0, 0, 0, 0.9);
+    opacity: 1;
   }
 }
 

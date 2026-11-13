@@ -58,20 +58,26 @@
       }
       /* Círculos de runas */
       .doom-intro__runas {
-        position: absolute; inset: 0; width: 100%; height: 100%;
-        overflow: visible; opacity: 0;
-        filter: drop-shadow(0 0 6px rgba(61, 220, 132, .7));
+        position: absolute; inset: 0; opacity: 0;
         animation: doom-runas-entrar 1.1s var(--doom-ease) .05s both;
       }
-      .doom-intro__giro { transform-origin: 50% 50%; animation: doom-girar 14s linear infinite; }
-      .doom-intro__giro--inverso { animation-direction: reverse; animation-duration: 10s; }
+      /* Cada anillo es una capa propia que gira entera: la rota la GPU sin volver a pintar el SVG. */
+      .doom-intro__capa {
+        position: absolute; inset: 0; will-change: transform;
+        animation: doom-girar 14s linear infinite;
+      }
+      .doom-intro__capa--inversa { animation-direction: reverse; animation-duration: 10s; }
+      .doom-intro__capa--exterior { animation-direction: reverse; animation-duration: 22s; }
+      .doom-intro__capa svg {
+        width: 100%; height: 100%; overflow: visible;
+        filter: drop-shadow(0 0 6px rgba(61, 220, 132, .7));
+      }
       .doom-intro__runas text {
         fill: var(--doom-verde); font-size: 6.2px; letter-spacing: 2.1px;
         font-family: 'Segoe UI Symbol', 'Noto Sans Runic', serif;
       }
       .doom-intro__runas circle { fill: none; stroke: var(--doom-verde); }
       .doom-intro__runas text { white-space: pre; }
-      .doom-intro__giro--exterior { animation-direction: reverse; animation-duration: 22s; }
       .doom-intro__runas .doom-intro__runas-ext { font-size: 5.4px; letter-spacing: 1.9px; opacity: .8; }
       /* Runas que se encienden una a una (los <tspan> los crea el script) */
       .doom-intro__runas tspan { animation: doom-runa .5s ease-out both; }
@@ -204,9 +210,8 @@
         75% { transform: translate(-1px, -1.5px); }
       }
       @keyframes doom-cargar {
-        0% { opacity: .85; scale: 1; rotate: 0deg; filter: drop-shadow(0 0 6px rgba(61, 220, 132, .7)); }
-        45% { filter: drop-shadow(0 0 8px rgba(230, 36, 41, .9)) drop-shadow(0 0 14px rgba(61, 220, 132, .6)); }
-        100% { opacity: 1; scale: .92; rotate: 160deg; filter: drop-shadow(0 0 4px #fff) drop-shadow(0 0 18px rgba(61, 220, 132, 1)); }
+        0% { opacity: .85; scale: 1; rotate: 0deg; }
+        100% { opacity: 1; scale: .92; rotate: 160deg; }
       }
       @keyframes doom-luz-carga {
         from { opacity: 1; scale: 1; filter: brightness(1); }
@@ -226,32 +231,36 @@
     <div id="doom-intro" class="doom-intro" role="status" hidden>
       <span class="doom-intro__estado">Cargando El camino a Doomsday</span>
       <div class="doom-intro__marca" aria-hidden="true">
-        <svg class="doom-intro__runas" viewBox="0 0 120 120">
-          <defs>
-            <path id="doom-ruta-runas" d="M60,60 m-50,0 a50,50 0 1,1 100,0 a50,50 0 1,1 -100,0" />
-            <path id="doom-ruta-exterior" d="M60,60 m-63,0 a63,63 0 1,1 126,0 a63,63 0 1,1 -126,0" />
-          </defs>
+        <div class="doom-intro__runas">
           <!-- Anillo exterior: gira al revés, con sellos de invocación -->
-          <g class="doom-intro__giro doom-intro__giro--exterior">
-            <circle cx="60" cy="60" r="68.5" stroke-width=".45" opacity=".5" />
-            <text class="doom-intro__runas-ext"><textPath href="#doom-ruta-exterior" data-encender>ᛟᛞᛜᛚ ᛗᛖᛒᛏ ᛊᛉᛈᛇ ᛃᛁᚾᚺ ᚹᚷᚲᚱ ᚨᚦᚢᚠ ᛟᛞᛜᛚ ᛗᛖᛒᛏ ᛊᛉᛈᛇ ᛃᛁᚾᚺ ᚹᚷᚲᚱ ᚨᚦᚢᚠ ᛟᛞᛜᛚ ᛗᛖᛒᛏ ᛊᛉᛈᛇ</textPath></text>
-            <circle cx="60" cy="60" r="59" stroke-width=".35" stroke-dasharray=".6 2.4" opacity=".7" />
-            <g class="doom-intro__sello"><circle cx="60" cy="-8.5" r="3.6" /><text x="60" y="-8.5">ᛟ</text></g>
-            <g class="doom-intro__sello" transform="rotate(60 60 60)"><circle cx="60" cy="-8.5" r="3.6" /><text x="60" y="-8.5">ᛞ</text></g>
-            <g class="doom-intro__sello" transform="rotate(120 60 60)"><circle cx="60" cy="-8.5" r="3.6" /><text x="60" y="-8.5">ᛉ</text></g>
-            <g class="doom-intro__sello" transform="rotate(180 60 60)"><circle cx="60" cy="-8.5" r="3.6" /><text x="60" y="-8.5">ᛗ</text></g>
-            <g class="doom-intro__sello" transform="rotate(240 60 60)"><circle cx="60" cy="-8.5" r="3.6" /><text x="60" y="-8.5">ᛇ</text></g>
-            <g class="doom-intro__sello" transform="rotate(300 60 60)"><circle cx="60" cy="-8.5" r="3.6" /><text x="60" y="-8.5">ᚦ</text></g>
-          </g>
-          <g class="doom-intro__giro">
-            <circle cx="60" cy="60" r="56" stroke-width=".5" opacity=".55" />
-            <text><textPath href="#doom-ruta-runas" data-encender>ᚠᚢᚦᚨᚱᚲᚷᚹ ᚺᚾᛁᛃᛇᛈ ᛉᛊᛏᛒᛖᛗ ᛚᛜᛞᛟ ᚠᚢᚦᚨᚱᚲᚷᚹ ᚺᚾᛁᛃᛇᛈ ᛉᛊᛏᛒᛖᛗ</textPath></text>
-            <circle cx="60" cy="60" r="45" stroke-width=".6" stroke-dasharray="1 3" opacity=".8" />
-          </g>
-          <g class="doom-intro__giro doom-intro__giro--inverso">
-            <circle cx="60" cy="60" r="40" stroke-width=".4" stroke-dasharray="14 4 2 4" opacity=".6" />
-          </g>
-        </svg>
+          <div class="doom-intro__capa doom-intro__capa--exterior">
+            <svg viewBox="0 0 120 120">
+              <defs><path id="doom-ruta-exterior" d="M60,60 m-63,0 a63,63 0 1,1 126,0 a63,63 0 1,1 -126,0" /></defs>
+                <circle cx="60" cy="60" r="68.5" stroke-width=".45" opacity=".5" />
+                <text class="doom-intro__runas-ext"><textPath href="#doom-ruta-exterior" data-encender>ᛟᛞᛜᛚ ᛗᛖᛒᛏ ᛊᛉᛈᛇ ᛃᛁᚾᚺ ᚹᚷᚲᚱ ᚨᚦᚢᚠ ᛟᛞᛜᛚ ᛗᛖᛒᛏ ᛊᛉᛈᛇ ᛃᛁᚾᚺ ᚹᚷᚲᚱ ᚨᚦᚢᚠ ᛟᛞᛜᛚ ᛗᛖᛒᛏ ᛊᛉᛈᛇ</textPath></text>
+                <circle cx="60" cy="60" r="59" stroke-width=".35" stroke-dasharray=".6 2.4" opacity=".7" />
+                <g class="doom-intro__sello"><circle cx="60" cy="-8.5" r="3.6" /><text x="60" y="-8.5">ᛟ</text></g>
+                <g class="doom-intro__sello" transform="rotate(60 60 60)"><circle cx="60" cy="-8.5" r="3.6" /><text x="60" y="-8.5">ᛞ</text></g>
+                <g class="doom-intro__sello" transform="rotate(120 60 60)"><circle cx="60" cy="-8.5" r="3.6" /><text x="60" y="-8.5">ᛉ</text></g>
+                <g class="doom-intro__sello" transform="rotate(180 60 60)"><circle cx="60" cy="-8.5" r="3.6" /><text x="60" y="-8.5">ᛗ</text></g>
+                <g class="doom-intro__sello" transform="rotate(240 60 60)"><circle cx="60" cy="-8.5" r="3.6" /><text x="60" y="-8.5">ᛇ</text></g>
+                <g class="doom-intro__sello" transform="rotate(300 60 60)"><circle cx="60" cy="-8.5" r="3.6" /><text x="60" y="-8.5">ᚦ</text></g>
+            </svg>
+          </div>
+          <div class="doom-intro__capa">
+            <svg viewBox="0 0 120 120">
+              <defs><path id="doom-ruta-runas" d="M60,60 m-50,0 a50,50 0 1,1 100,0 a50,50 0 1,1 -100,0" /></defs>
+                <circle cx="60" cy="60" r="56" stroke-width=".5" opacity=".55" />
+                <text><textPath href="#doom-ruta-runas" data-encender>ᚠᚢᚦᚨᚱᚲᚷᚹ ᚺᚾᛁᛃᛇᛈ ᛉᛊᛏᛒᛖᛗ ᛚᛜᛞᛟ ᚠᚢᚦᚨᚱᚲᚷᚹ ᚺᚾᛁᛃᛇᛈ ᛉᛊᛏᛒᛖᛗ</textPath></text>
+                <circle cx="60" cy="60" r="45" stroke-width=".6" stroke-dasharray="1 3" opacity=".8" />
+            </svg>
+          </div>
+          <div class="doom-intro__capa doom-intro__capa--inversa">
+            <svg viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="40" stroke-width=".4" stroke-dasharray="14 4 2 4" opacity=".6" />
+            </svg>
+          </div>
+        </div>
         <span class="doom-intro__onda"></span>
         <span class="doom-intro__onda doom-intro__onda--roja"></span>
         <span class="doom-intro__implosion"></span>
@@ -384,7 +393,7 @@
           salida.ratio.value = 6;
           salida.connect(ctx.destination);
           const master = ctx.createGain();
-          master.gain.value = 0.75;
+          master.gain.value = 0.9;
           master.connect(salida);
           const eco = ctx.createConvolver();
           eco.buffer = impulso(3.2);
@@ -436,8 +445,21 @@
             const osc = ctx.createOscillator();
             const env = ctx.createGain();
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(95, cuando);
-            osc.frequency.exponentialRampToValueAtTime(38, cuando + 0.35);
+            osc.frequency.setValueAtTime(130, cuando);
+            osc.frequency.exponentialRampToValueAtTime(48, cuando + 0.35);
+            // Armónico de "cuerpo" para que se oiga también en altavoces pequeños (portátil, móvil).
+            const cuerpo = ctx.createOscillator();
+            const cuerpoNivel = ctx.createGain();
+            cuerpo.type = 'triangle';
+            cuerpo.frequency.setValueAtTime(260, cuando);
+            cuerpo.frequency.exponentialRampToValueAtTime(96, cuando + 0.3);
+            cuerpoNivel.gain.setValueAtTime(0.0001, cuando);
+            cuerpoNivel.gain.exponentialRampToValueAtTime(0.35 * fuerza, cuando + 0.01);
+            cuerpoNivel.gain.exponentialRampToValueAtTime(0.0001, cuando + 0.45);
+            cuerpo.connect(cuerpoNivel);
+            conectar(cuerpoNivel, 0.3);
+            cuerpo.start(cuando);
+            cuerpo.stop(cuando + 0.5);
             env.gain.setValueAtTime(0.0001, cuando);
             env.gain.exponentialRampToValueAtTime(0.9 * fuerza, cuando + 0.01);
             env.gain.exponentialRampToValueAtTime(0.0001, cuando + 0.7);
@@ -464,8 +486,8 @@
             const sat = distorsion(3);
             const filtro = ctx.createBiquadFilter();
             filtro.type = 'lowpass';
-            filtro.frequency.value = 140;
-            filtro.Q.value = 4;
+            filtro.frequency.value = 320;
+            filtro.Q.value = 3;
             const nivel = ctx.createGain();
             nivel.gain.setValueAtTime(0.0001, ahora);
             nivel.gain.exponentialRampToValueAtTime(0.32, ahora + 1.2);
@@ -477,7 +499,7 @@
             lfoNivel.gain.value = 0.25;
             lfo.connect(lfoNivel).connect(pulso.gain);
             lfo.start(ahora);
-            const oscs = [36.71, 38.89, 18.35].map((f, i) => {
+            const oscs = [55, 58.27, 36.71].map((f, i) => {
               const osc = ctx.createOscillator();
               osc.type = i === 2 ? 'sine' : 'sawtooth';
               osc.frequency.value = f;
@@ -515,7 +537,7 @@
             const ahora = ctx.currentTime;
             const fin = ahora + segundos;
             rugido.filtro.frequency.setValueAtTime(rugido.filtro.frequency.value, ahora);
-            rugido.filtro.frequency.exponentialRampToValueAtTime(900, fin);
+            rugido.filtro.frequency.exponentialRampToValueAtTime(1400, fin);
             rugido.nivel.gain.setValueAtTime(rugido.nivel.gain.value, ahora);
             rugido.nivel.gain.linearRampToValueAtTime(0.5, fin);
             rugido.lfo.frequency.setValueAtTime(1.6, ahora);
@@ -562,14 +584,27 @@
             const sub = ctx.createOscillator();
             const subNivel = ctx.createGain();
             sub.type = 'sine';
-            sub.frequency.setValueAtTime(70, ahora);
-            sub.frequency.exponentialRampToValueAtTime(24, ahora + 1.6);
+            sub.frequency.setValueAtTime(90, ahora);
+            sub.frequency.exponentialRampToValueAtTime(32, ahora + 1.6);
             subNivel.gain.setValueAtTime(0.9, ahora);
             subNivel.gain.exponentialRampToValueAtTime(0.0001, ahora + 2.4);
             sub.connect(subNivel);
             conectar(subNivel, 0.2);
             sub.start(ahora);
             sub.stop(ahora + 2.5);
+
+            // Capa media del boom: lo que hace que se oiga en altavoces pequeños.
+            const cuerpo = ctx.createOscillator();
+            const cuerpoNivel = ctx.createGain();
+            cuerpo.type = 'triangle';
+            cuerpo.frequency.setValueAtTime(190, ahora);
+            cuerpo.frequency.exponentialRampToValueAtTime(62, ahora + 1.2);
+            cuerpoNivel.gain.setValueAtTime(0.5, ahora);
+            cuerpoNivel.gain.exponentialRampToValueAtTime(0.0001, ahora + 1.8);
+            cuerpo.connect(cuerpoNivel);
+            conectar(cuerpoNivel, 0.35);
+            cuerpo.start(ahora);
+            cuerpo.stop(ahora + 1.9);
           }
 
           /** Libera el audio cuando termina la cola del estallido. */
