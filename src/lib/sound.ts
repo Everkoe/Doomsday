@@ -6,10 +6,10 @@
 
 type Nota = { frecuencia: number; retraso: number; duracion: number; volumen: number };
 
-/** Dos notas graves en quinta (Re → La): breve, serio, con un toque místico. */
+/** Dos notas graves en quinta (La → Mi): breve, oscuro y serio. */
 const ACORDE_DOOM: readonly Nota[] = [
-  { frecuencia: 293.66, retraso: 0, duracion: 0.26, volumen: 0.07 },
-  { frecuencia: 440, retraso: 0.11, duracion: 0.34, volumen: 0.055 },
+  { frecuencia: 220, retraso: 0, duracion: 0.3, volumen: 0.08 },
+  { frecuencia: 329.63, retraso: 0.12, duracion: 0.38, volumen: 0.06 },
 ];
 
 let contexto: AudioContext | null = null;
