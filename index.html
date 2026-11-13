@@ -95,7 +95,7 @@
       .doom-intro__sello:nth-of-type(5) { animation-delay: .95s; }
       .doom-intro__sello:nth-of-type(6) { animation-delay: 1.05s; }
 
-      /* Carga: el poder de Doom se acumula justo antes del portal */
+      /* Carga: el poder de Doom se concentra justo antes del portal */
       .doom-intro--cargando .doom-intro__runas { animation: doom-cargar .7s ease-in-out forwards; }
       .doom-intro--cargando .doom-intro__marca::before { animation: doom-luz-carga .7s ease-in-out forwards; }
       .doom-intro--cargando .doom-intro__sello circle { fill: var(--doom-verde); }
@@ -168,7 +168,7 @@
         box-shadow: 0 0 0 1.5px rgba(61, 220, 132, .7), 0 0 22px 4px rgba(61, 220, 132, .35), inset 0 0 22px 4px rgba(61, 220, 132, .2);
       }
       .doom-intro--portal.doom-intro--saliendo .doom-intro__borde { opacity: 1; }
-      .doom-intro--saliendo .doom-intro__marca { animation: doom-retirar .7s ease both; }
+      .doom-intro--saliendo .doom-intro__marca { animation: doom-retirar .8s cubic-bezier(.3, 0, .2, 1) both; }
 
       @keyframes doom-luz { from { opacity: 0; scale: .7; } to { opacity: 1; scale: 1; } }
       @keyframes doom-runas-entrar { from { opacity: 0; scale: .6; rotate: -40deg; } to { opacity: .85; scale: 1; rotate: 0deg; } }
@@ -188,23 +188,29 @@
         80% { opacity: 1; }
         100% { --doom-radio: 150vmax; opacity: 0; }
       }
-      @keyframes doom-retirar { to { opacity: 0; scale: 1.18; filter: blur(4px); } }
+      /* El círculo se hunde hacia el fondo mientras el portal se abre (acorde con el sonido grave) */
+      @keyframes doom-retirar {
+        0% { scale: 1; }
+        25% { scale: .95; filter: brightness(1.5); }
+        100% { opacity: 0; scale: .72; filter: blur(5px) brightness(.6); }
+      }
       @keyframes doom-runa {
         0% { fill-opacity: 0; }
         35% { fill-opacity: 1; fill: #f2fff7; }
         100% { fill-opacity: 1; fill: var(--doom-verde); }
       }
       @keyframes doom-sello { 0% { opacity: 0; } 50% { opacity: 1; filter: brightness(2.5); } 100% { opacity: 1; filter: none; } }
+      /* Carga: el círculo "inhala" (se contrae y se oscurece) antes del golpe grave */
       @keyframes doom-cargar {
         0% { opacity: .85; scale: 1; rotate: 0deg; }
-        100% { opacity: 1; scale: .97; rotate: 35deg; }
+        100% { opacity: 1; scale: .94; rotate: 25deg; }
       }
       @keyframes doom-luz-carga {
-        from { opacity: 1; scale: 1; filter: brightness(1); }
-        to { opacity: 1; scale: 1.1; filter: brightness(1.35); }
+        from { opacity: 1; scale: 1; }
+        to { opacity: .55; scale: .82; }
       }
       @keyframes doom-titulo-carga {
-        to { filter: brightness(1.2) drop-shadow(0 0 10px rgba(61, 220, 132, .7)) drop-shadow(0 2px 0 #04140b); }
+        to { filter: brightness(.8) drop-shadow(0 0 6px rgba(61, 220, 132, .4)) drop-shadow(0 2px 0 #04140b); }
       }
       @media (prefers-reduced-motion: reduce) { .doom-intro { display: none; } }
     </style>
@@ -322,7 +328,7 @@
           setTimeout(salir, Math.max(0, MINIMO_MS - (performance.now() - inicio)));
         }
 
-        // Primero el círculo se carga (runas que aceleran y brillo que sube) y luego se abre el portal.
+        // Primero el círculo se contrae y se oscurece; con el golpe grave se hunde y se abre el portal.
         function salir() {
           document.removeEventListener('doomsday:lista', lista);
           intro.classList.add('doom-intro--cargando');
