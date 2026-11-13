@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
-import { ArrowRight, Clock, Eye, EyeOff, Globe2, Hourglass, X } from 'lucide-react';
+import { ArrowRight, Clock, ExternalLink, Eye, EyeOff, Globe2, Hourglass, Play, X } from 'lucide-react';
 import { CATALOG_BY_ID } from '../data/catalog';
+import { disneyPlusUrl } from '../data/streaming';
 import { SAGAS_BY_ID } from '../data/sagas';
 import { useProgress } from '../hooks/useProgress';
 import { formatRuntime, getMedia, getRuntime } from '../lib/media';
@@ -35,6 +36,7 @@ function DetailContent({ title, onClose, onOpen }: { title: Title; onClose: () =
   const [showSpoilers, setShowSpoilers] = useState(false);
   const media = getMedia(title.id);
   const next = nextPendingAfter(state, title.id);
+  const disneyPlus = disneyPlusUrl(title.id);
   const ChronoIcon = CHRONO_ICON[title.chronology.kind];
   const runtime = formatRuntime(getRuntime(title), title.runtimeApprox && !media.runtimeMinutes);
   const backdrop = media.backdrop ?? media.poster ?? media.logo;
@@ -99,6 +101,19 @@ function DetailContent({ title, onClose, onOpen }: { title: Title; onClose: () =
         </div>
 
         <div className="mt-6 flex flex-wrap items-center gap-3">
+          {disneyPlus && (
+            <a
+              href={disneyPlus}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-12 items-center gap-2.5 rounded-md bg-[#0063e5] px-5 text-sm font-semibold uppercase tracking-[0.1em] text-white shadow-[0_8px_24px_-8px_rgba(0,99,229,0.7)] transition-colors hover:bg-[#0483ee]"
+            >
+              <Play className="size-4 fill-current" />
+              Ver en Disney+
+              <ExternalLink className="size-3.5 opacity-70" aria-hidden />
+              <span className="sr-only">(se abre en una pestaña nueva)</span>
+            </a>
+          )}
           <WatchStatusButton id={title.id} />
           <WatchStatusButton id={title.id} variant="segmented" />
           {next && (
