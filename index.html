@@ -97,12 +97,12 @@
 
       /* Carga: el poder de Doom se acumula justo antes del portal */
       .doom-intro--cargando .doom-intro__marca { animation: doom-temblor .07s linear infinite; }
-      .doom-intro--cargando .doom-intro__runas { animation: doom-cargar .55s cubic-bezier(.5, 0, .9, .5) forwards; }
-      .doom-intro--cargando .doom-intro__marca::before { animation: doom-luz-carga .55s ease-in forwards; }
-      .doom-intro--cargando .doom-intro__implosion { animation: doom-implosion .55s cubic-bezier(.5, 0, .9, .5) forwards; }
+      .doom-intro--cargando .doom-intro__runas { animation: doom-cargar .9s cubic-bezier(.5, 0, .9, .5) forwards; }
+      .doom-intro--cargando .doom-intro__marca::before { animation: doom-luz-carga .9s ease-in forwards; }
+      .doom-intro--cargando .doom-intro__implosion { animation: doom-implosion .9s cubic-bezier(.5, 0, .9, .5) forwards; }
       .doom-intro--cargando .doom-intro__sello circle { fill: var(--doom-verde); }
       .doom-intro--cargando .doom-intro__sello text { fill: #07120c; }
-      .doom-intro--cargando .doom-intro__titulo span { animation: doom-titulo-carga .55s ease-in forwards; }
+      .doom-intro--cargando .doom-intro__titulo span { animation: doom-titulo-carga .9s ease-in forwards; }
       /* Ondas de energía */
       .doom-intro__onda {
         position: absolute; inset: 18%;
@@ -305,7 +305,8 @@
 
         const MINIMO_MS = 1900;
         const MAXIMO_MS = 3000;
-        const CARGA_MS = 550;
+        const CARGA_MS = 900;
+        const sonido = crearSonidoDoom();
         const app = document.getElementById('root');
         const inicio = performance.now();
         intro.classList.toggle(
@@ -319,6 +320,13 @@
         const limite = setTimeout(salir, MAXIMO_MS);
         document.addEventListener('doomsday:lista', lista, { once: true });
 
+        // Intenta sonar ya; si el navegador lo bloquea, arranca con el primer toque o tecla durante la intro.
+        sonido?.intentar();
+        const desbloquear = () => sonido?.intentar();
+        ['pointerdown', 'keydown', 'touchstart'].forEach((tipo) =>
+          window.addEventListener(tipo, desbloquear, { capture: true, passive: true }),
+        );
+
         function lista() {
           clearTimeout(limite);
           setTimeout(salir, Math.max(0, MINIMO_MS - (performance.now() - inicio)));
@@ -328,13 +336,19 @@
         function salir() {
           document.removeEventListener('doomsday:lista', lista);
           intro.classList.add('doom-intro--cargando');
+          sonido?.cargar(CARGA_MS / 1000);
           setTimeout(abrirPortal, CARGA_MS);
         }
 
         function abrirPortal() {
           intro.classList.add('doom-intro--saliendo');
+          sonido?.estallar();
           const terminar = () => {
             clearTimeout(respaldo);
+            ['pointerdown', 'keydown', 'touchstart'].forEach((tipo) =>
+              window.removeEventListener(tipo, desbloquear, { capture: true }),
+            );
+            sonido?.cerrar();
             app.removeAttribute('inert');
             intro.remove();
           };
@@ -342,6 +356,195 @@
           intro.addEventListener('animationend', (e) => {
             if (e.target === intro) terminar();
           });
+        }
+
+        /**
+         * Sonido de la intro sintetizado con Web Audio (sin archivos): zumbido de poder, campanas
+         * de las runas al encenderse, carga creciente y estallido al abrirse el portal.
+         * Los tiempos van sincronizados con las animaciones CSS (segundos desde el inicio de la intro).
+         */
+        function crearSonidoDoom() {
+          const Contexto = window.AudioContext || window.webkitAudioContext;
+          if (!Contexto) return null;
+          let ctx;
+          try {
+            ctx = new Contexto();
+          } catch {
+            return null;
+          }
+          const t0 = performance.now();
+          const RUNAS = [880, 1046.5, 1174.7, 1318.5, 1568, 1760, 2093, 2349.3];
+          const SELLOS = [196, 220, 261.6, 293.7, 329.6, 392];
+          let activo = false;
+          let fase = 'intro';
+          let zumbido = null;
+
+          const salida = ctx.createDynamicsCompressor();
+          salida.connect(ctx.destination);
+          const master = ctx.createGain();
+          master.gain.value = 0.6;
+          master.connect(salida);
+          const eco = ctx.createConvolver();
+          eco.buffer = impulso(2.6);
+          const ecoNivel = ctx.createGain();
+          ecoNivel.gain.value = 0.4;
+          eco.connect(ecoNivel).connect(master);
+
+          function impulso(segundos) {
+            const largo = Math.floor(ctx.sampleRate * segundos);
+            const buffer = ctx.createBuffer(2, largo, ctx.sampleRate);
+            for (let c = 0; c < 2; c++) {
+              const datos = buffer.getChannelData(c);
+              for (let i = 0; i < largo; i++) datos[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / largo, 3);
+            }
+            return buffer;
+          }
+
+          function ruido(segundos) {
+            const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * segundos), ctx.sampleRate);
+            const datos = buffer.getChannelData(0);
+            for (let i = 0; i < datos.length; i++) datos[i] = Math.random() * 2 - 1;
+            const fuente = ctx.createBufferSource();
+            fuente.buffer = buffer;
+            return fuente;
+          }
+
+          function conectar(nodo, envio = 0.5) {
+            nodo.connect(master);
+            const send = ctx.createGain();
+            send.gain.value = envio;
+            nodo.connect(send).connect(eco);
+          }
+
+          /** Campana mística: fundamental + parcial inarmónico, ataque corto y cola larga. */
+          function campana(cuando, frecuencia, volumen, duracion) {
+            [[1, 1], [2.76, 0.35], [5.4, 0.12]].forEach(([multiplo, peso]) => {
+              const osc = ctx.createOscillator();
+              const env = ctx.createGain();
+              osc.type = 'sine';
+              osc.frequency.value = frecuencia * multiplo;
+              env.gain.setValueAtTime(0, cuando);
+              env.gain.linearRampToValueAtTime(volumen * peso, cuando + 0.008);
+              env.gain.exponentialRampToValueAtTime(0.0001, cuando + duracion);
+              osc.connect(env);
+              conectar(env, 0.7);
+              osc.start(cuando);
+              osc.stop(cuando + duracion + 0.05);
+            });
+          }
+
+          /** Zumbido grave de energía que acompaña toda la intro. */
+          function iniciarZumbido(ahora) {
+            const filtro = ctx.createBiquadFilter();
+            filtro.type = 'lowpass';
+            filtro.frequency.value = 170;
+            filtro.Q.value = 6;
+            const nivel = ctx.createGain();
+            nivel.gain.setValueAtTime(0, ahora);
+            nivel.gain.linearRampToValueAtTime(0.22, ahora + 0.8);
+            const oscs = [55, 55.7, 27.5].map((f, i) => {
+              const osc = ctx.createOscillator();
+              osc.type = i === 2 ? 'sine' : 'sawtooth';
+              osc.frequency.value = f;
+              osc.connect(filtro);
+              osc.start(ahora);
+              return osc;
+            });
+            filtro.connect(nivel);
+            conectar(nivel, 0.25);
+            zumbido = { filtro, nivel, oscs };
+          }
+
+          function arrancar() {
+            if (activo) return;
+            activo = true;
+            const ahora = ctx.currentTime + 0.02;
+            const pasado = (performance.now() - t0) / 1000;
+            iniciarZumbido(ahora);
+            // Solo suenan las runas y sellos que aún no se han encendido.
+            const programar = (segundo, accion) => segundo >= pasado && accion(ahora + segundo - pasado);
+            RUNAS.forEach((f, i) => programar(0.35 + i * 0.1, (t) => campana(t, f, 0.05, 1.4)));
+            SELLOS.forEach((f, i) => programar(0.55 + i * 0.1, (t) => campana(t, f, 0.09, 2.2)));
+            if (fase === 'carga') cargar(0.6);
+          }
+
+          function intentar() {
+            if (activo || fase === 'fin') return;
+            const promesa = ctx.state === 'running' ? Promise.resolve() : ctx.resume();
+            promesa.then(() => ctx.state === 'running' && arrancar()).catch(() => {});
+          }
+
+          /** El poder se acumula: el zumbido se abre y sube, y un siseo asciende hasta el portal. */
+          function cargar(segundos) {
+            fase = 'carga';
+            if (!activo || !zumbido) return;
+            const ahora = ctx.currentTime;
+            const fin = ahora + segundos;
+            zumbido.filtro.frequency.setValueAtTime(zumbido.filtro.frequency.value, ahora);
+            zumbido.filtro.frequency.exponentialRampToValueAtTime(1400, fin);
+            zumbido.nivel.gain.setValueAtTime(zumbido.nivel.gain.value, ahora);
+            zumbido.nivel.gain.linearRampToValueAtTime(0.38, fin);
+            zumbido.oscs.forEach((osc) => osc.frequency.exponentialRampToValueAtTime(osc.frequency.value * 2, fin));
+
+            const siseo = ruido(segundos + 0.1);
+            const banda = ctx.createBiquadFilter();
+            banda.type = 'bandpass';
+            banda.Q.value = 1.4;
+            banda.frequency.setValueAtTime(300, ahora);
+            banda.frequency.exponentialRampToValueAtTime(3200, fin);
+            const nivel = ctx.createGain();
+            nivel.gain.setValueAtTime(0, ahora);
+            nivel.gain.linearRampToValueAtTime(0.28, fin);
+            siseo.connect(banda).connect(nivel);
+            conectar(nivel, 0.3);
+            siseo.start(ahora);
+            siseo.stop(fin + 0.05);
+          }
+
+          /** Estallido grave al abrirse el portal, con cola de eco. */
+          function estallar() {
+            fase = 'fin';
+            if (!activo) return;
+            const ahora = ctx.currentTime;
+            if (zumbido) {
+              zumbido.nivel.gain.cancelScheduledValues(ahora);
+              zumbido.nivel.gain.setValueAtTime(zumbido.nivel.gain.value, ahora);
+              zumbido.nivel.gain.exponentialRampToValueAtTime(0.0001, ahora + 1.2);
+              zumbido.oscs.forEach((osc) => osc.stop(ahora + 1.3));
+            }
+            const golpe = ctx.createOscillator();
+            const golpeNivel = ctx.createGain();
+            golpe.type = 'sine';
+            golpe.frequency.setValueAtTime(120, ahora);
+            golpe.frequency.exponentialRampToValueAtTime(30, ahora + 0.8);
+            golpeNivel.gain.setValueAtTime(0.95, ahora);
+            golpeNivel.gain.exponentialRampToValueAtTime(0.0001, ahora + 1.8);
+            golpe.connect(golpeNivel);
+            conectar(golpeNivel, 0.4);
+            golpe.start(ahora);
+            golpe.stop(ahora + 1.9);
+
+            const rafaga = ruido(1.2);
+            const grave = ctx.createBiquadFilter();
+            grave.type = 'lowpass';
+            grave.frequency.setValueAtTime(2400, ahora);
+            grave.frequency.exponentialRampToValueAtTime(200, ahora + 1);
+            const rafagaNivel = ctx.createGain();
+            rafagaNivel.gain.setValueAtTime(0.5, ahora);
+            rafagaNivel.gain.exponentialRampToValueAtTime(0.0001, ahora + 1.1);
+            rafaga.connect(grave).connect(rafagaNivel);
+            conectar(rafagaNivel, 0.8);
+            rafaga.start(ahora);
+            campana(ahora + 0.05, 130.8, 0.12, 3);
+          }
+
+          /** Libera el audio cuando termina la cola del estallido. */
+          function cerrar() {
+            fase = 'fin';
+            setTimeout(() => ctx.close().catch(() => {}), activo ? 3200 : 0);
+          }
+
+          return { intentar, cargar, estallar, cerrar };
         }
       })();
     </script>
