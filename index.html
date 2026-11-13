@@ -360,8 +360,8 @@
 
         /**
          * Sonido de la intro sintetizado con Web Audio (sin archivos), al estilo de un tráiler:
-         * rugido grave disonante, latidos de tambor mientras se encienden las runas, golpe metálico
-         * de los sellos, carga con latidos que aceleran y un BRAAAM distorsionado al abrirse el portal.
+         * rugido grave disonante, latidos de tambor mientras se encienden las runas, carga con latidos
+         * que aceleran y un boom grave al abrirse el portal.
          * Los tiempos van sincronizados con las animaciones CSS (segundos desde el inicio de la intro).
          */
         function crearSonidoDoom() {
@@ -375,9 +375,6 @@
           }
           const t0 = performance.now();
           const LATIDOS = [0.35, 0.8, 1.25, 1.6];
-          const GOLPE_SELLOS = 1.05;
-          // Re menor con segunda menor (Mi bemol): acorde oscuro y tenso.
-          const ACORDE_BRAAM = [36.71, 73.42, 110, 77.78, 146.83];
           let activo = false;
           let fase = 'intro';
           let rugido = null;
@@ -461,30 +458,6 @@
             golpe.start(cuando);
           }
 
-          /** Golpe metálico pesado (como la armadura de Doom): parciales inarmónicos graves y saturados. */
-          function metal(cuando, volumen = 0.5) {
-            const sat = distorsion(6);
-            const filtro = ctx.createBiquadFilter();
-            filtro.type = 'lowpass';
-            filtro.frequency.setValueAtTime(3200, cuando);
-            filtro.frequency.exponentialRampToValueAtTime(400, cuando + 1.6);
-            const env = ctx.createGain();
-            env.gain.setValueAtTime(0.0001, cuando);
-            env.gain.exponentialRampToValueAtTime(volumen, cuando + 0.006);
-            env.gain.exponentialRampToValueAtTime(0.0001, cuando + 2.2);
-            [73, 151, 233, 347, 529].forEach((f) => {
-              const osc = ctx.createOscillator();
-              osc.type = 'triangle';
-              osc.frequency.value = f;
-              osc.connect(sat);
-              osc.start(cuando);
-              osc.stop(cuando + 2.3);
-            });
-            sat.connect(filtro).connect(env);
-            conectar(env, 0.6);
-            latido(cuando, 0.8);
-          }
-
           /** Rugido grave disonante que acompaña toda la intro, con un pulso lento. */
           function iniciarRugido(ahora) {
             const sat = distorsion(3);
@@ -525,7 +498,6 @@
             // Solo suenan los golpes que aún no han pasado en la animación.
             const programar = (segundo, accion) => segundo >= pasado && accion(ahora + segundo - pasado);
             LATIDOS.forEach((s, i) => programar(s, (t) => latido(t, 0.6 + i * 0.12)));
-            programar(GOLPE_SELLOS, (t) => metal(t, 0.45));
             if (fase === 'carga') cargar(0.6);
           }
 
@@ -573,36 +545,7 @@
             siseo.stop(fin + 0.05);
           }
 
-          /** BRAAAM de tráiler: acorde grave disonante, saturado, que se abre de golpe y se apaga lento. */
-          function braam(cuando, duracion) {
-            const sat = distorsion(8);
-            const filtro = ctx.createBiquadFilter();
-            filtro.type = 'lowpass';
-            filtro.Q.value = 3;
-            filtro.frequency.setValueAtTime(180, cuando);
-            filtro.frequency.exponentialRampToValueAtTime(2200, cuando + 0.12);
-            filtro.frequency.exponentialRampToValueAtTime(320, cuando + duracion);
-            const env = ctx.createGain();
-            env.gain.setValueAtTime(0.0001, cuando);
-            env.gain.exponentialRampToValueAtTime(0.55, cuando + 0.05);
-            env.gain.setValueAtTime(0.55, cuando + duracion * 0.35);
-            env.gain.exponentialRampToValueAtTime(0.0001, cuando + duracion);
-            ACORDE_BRAAM.forEach((f) =>
-              [-6, 6].forEach((desafine) => {
-                const osc = ctx.createOscillator();
-                osc.type = 'sawtooth';
-                osc.frequency.value = f;
-                osc.detune.value = desafine;
-                osc.connect(sat);
-                osc.start(cuando);
-                osc.stop(cuando + duracion + 0.05);
-              }),
-            );
-            sat.connect(filtro).connect(env);
-            conectar(env, 0.45);
-          }
-
-          /** Portal: BRAAAM + caída sub-grave + impacto, con cola de eco. */
+          /** Portal: golpe grave limpio, caída sub-grave e impacto, con cola de eco. */
           function estallar() {
             fase = 'fin';
             if (!activo) return;
@@ -613,8 +556,7 @@
               rugido.nivel.gain.exponentialRampToValueAtTime(0.0001, ahora + 0.4);
               rugido.oscs.forEach((osc) => osc.stop(ahora + 0.5));
             }
-            braam(ahora, 2.8);
-            metal(ahora, 0.35);
+            latido(ahora, 1);
 
             const sub = ctx.createOscillator();
             const subNivel = ctx.createGain();
