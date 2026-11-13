@@ -6,10 +6,13 @@
 
 type Nota = { frecuencia: number; retraso: number; duracion: number; volumen: number };
 
-/** "Abismo": dos notas muy graves en quinta (La2 → Mi3): breve, oscuro y serio. */
-const ACORDE_DOOM: readonly Nota[] = [
-  { frecuencia: 110, retraso: 0, duracion: 0.34, volumen: 0.12 },
-  { frecuencia: 164.81, retraso: 0.12, duracion: 0.42, volumen: 0.1 },
+/**
+ * "Check": dos notas rápidas que suben (La3 → Mi4). Corto y ligero para repetirlo sin cansar.
+ * La intro (index.html) usa su propio sonido, "Abismo", más grave y largo.
+ */
+const ACORDE_CHECK: readonly Nota[] = [
+  { frecuencia: 220, retraso: 0, duracion: 0.1, volumen: 0.07 },
+  { frecuencia: 329.63, retraso: 0.06, duracion: 0.16, volumen: 0.06 },
 ];
 
 let contexto: AudioContext | null = null;
@@ -39,7 +42,7 @@ function tocarNota(ctx: AudioContext, inicio: number, { frecuencia, retraso, dur
     osc.type = tipo;
     osc.frequency.value = frecuencia * multiplo;
     nivel.gain.setValueAtTime(0, comienzo);
-    nivel.gain.linearRampToValueAtTime(volumen * peso, comienzo + 0.015);
+    nivel.gain.linearRampToValueAtTime(volumen * peso, comienzo + 0.01);
     nivel.gain.exponentialRampToValueAtTime(0.0001, fin);
     osc.connect(nivel).connect(ctx.destination);
     osc.start(comienzo);
@@ -54,7 +57,7 @@ export function playConfirmSound(): void {
   const reproducir = () => {
     try {
       const inicio = ctx.currentTime + 0.02;
-      ACORDE_DOOM.forEach((nota) => tocarNota(ctx, inicio, nota));
+      ACORDE_CHECK.forEach((nota) => tocarNota(ctx, inicio, nota));
     } catch {
       // El sonido es decorativo: si falla, la acción sigue funcionando.
     }
