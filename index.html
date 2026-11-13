@@ -359,8 +359,9 @@
         }
 
         /**
-         * Sonido de la intro sintetizado con Web Audio (sin archivos): zumbido de poder, campanas
-         * de las runas al encenderse, carga creciente y estallido al abrirse el portal.
+         * Sonido de la intro sintetizado con Web Audio (sin archivos), al estilo de un tráiler:
+         * rugido grave disonante, latidos de tambor mientras se encienden las runas, golpe metálico
+         * de los sellos, carga con latidos que aceleran y un BRAAAM distorsionado al abrirse el portal.
          * Los tiempos van sincronizados con las animaciones CSS (segundos desde el inicio de la intro).
          */
         function crearSonidoDoom() {
@@ -373,21 +374,25 @@
             return null;
           }
           const t0 = performance.now();
-          const RUNAS = [880, 1046.5, 1174.7, 1318.5, 1568, 1760, 2093, 2349.3];
-          const SELLOS = [196, 220, 261.6, 293.7, 329.6, 392];
+          const LATIDOS = [0.35, 0.8, 1.25, 1.6];
+          const GOLPE_SELLOS = 1.05;
+          // Re menor con segunda menor (Mi bemol): acorde oscuro y tenso.
+          const ACORDE_BRAAM = [36.71, 73.42, 110, 77.78, 146.83];
           let activo = false;
           let fase = 'intro';
-          let zumbido = null;
+          let rugido = null;
 
           const salida = ctx.createDynamicsCompressor();
+          salida.threshold.value = -14;
+          salida.ratio.value = 6;
           salida.connect(ctx.destination);
           const master = ctx.createGain();
-          master.gain.value = 0.6;
+          master.gain.value = 0.75;
           master.connect(salida);
           const eco = ctx.createConvolver();
-          eco.buffer = impulso(2.6);
+          eco.buffer = impulso(3.2);
           const ecoNivel = ctx.createGain();
-          ecoNivel.gain.value = 0.4;
+          ecoNivel.gain.value = 0.35;
           eco.connect(ecoNivel).connect(master);
 
           function impulso(segundos) {
@@ -395,7 +400,7 @@
             const buffer = ctx.createBuffer(2, largo, ctx.sampleRate);
             for (let c = 0; c < 2; c++) {
               const datos = buffer.getChannelData(c);
-              for (let i = 0; i < largo; i++) datos[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / largo, 3);
+              for (let i = 0; i < largo; i++) datos[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / largo, 2.5);
             }
             return buffer;
           }
@@ -409,50 +414,106 @@
             return fuente;
           }
 
-          function conectar(nodo, envio = 0.5) {
+          /** Saturación para dar cuerpo "metálico" y agresivo a los graves. */
+          function distorsion(cantidad) {
+            const nodo = ctx.createWaveShaper();
+            const curva = new Float32Array(1024);
+            for (let i = 0; i < curva.length; i++) {
+              const x = (i / (curva.length - 1)) * 2 - 1;
+              curva[i] = ((1 + cantidad) * x) / (1 + cantidad * Math.abs(x));
+            }
+            nodo.curve = curva;
+            nodo.oversample = '4x';
+            return nodo;
+          }
+
+          function conectar(nodo, envio = 0.4) {
             nodo.connect(master);
             const send = ctx.createGain();
             send.gain.value = envio;
             nodo.connect(send).connect(eco);
           }
 
-          /** Campana mística: fundamental + parcial inarmónico, ataque corto y cola larga. */
-          function campana(cuando, frecuencia, volumen, duracion) {
-            [[1, 1], [2.76, 0.35], [5.4, 0.12]].forEach(([multiplo, peso]) => {
-              const osc = ctx.createOscillator();
-              const env = ctx.createGain();
-              osc.type = 'sine';
-              osc.frequency.value = frecuencia * multiplo;
-              env.gain.setValueAtTime(0, cuando);
-              env.gain.linearRampToValueAtTime(volumen * peso, cuando + 0.008);
-              env.gain.exponentialRampToValueAtTime(0.0001, cuando + duracion);
-              osc.connect(env);
-              conectar(env, 0.7);
-              osc.start(cuando);
-              osc.stop(cuando + duracion + 0.05);
-            });
-          }
+          /** Latido de tambor grave de tráiler: caída de tono + chasquido de ruido. */
+          function latido(cuando, fuerza = 1) {
+            const osc = ctx.createOscillator();
+            const env = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(95, cuando);
+            osc.frequency.exponentialRampToValueAtTime(38, cuando + 0.35);
+            env.gain.setValueAtTime(0.0001, cuando);
+            env.gain.exponentialRampToValueAtTime(0.9 * fuerza, cuando + 0.01);
+            env.gain.exponentialRampToValueAtTime(0.0001, cuando + 0.7);
+            osc.connect(env);
+            conectar(env, 0.35);
+            osc.start(cuando);
+            osc.stop(cuando + 0.75);
 
-          /** Zumbido grave de energía que acompaña toda la intro. */
-          function iniciarZumbido(ahora) {
+            const golpe = ruido(0.12);
             const filtro = ctx.createBiquadFilter();
             filtro.type = 'lowpass';
-            filtro.frequency.value = 170;
-            filtro.Q.value = 6;
+            filtro.frequency.value = 900;
             const nivel = ctx.createGain();
-            nivel.gain.setValueAtTime(0, ahora);
-            nivel.gain.linearRampToValueAtTime(0.22, ahora + 0.8);
-            const oscs = [55, 55.7, 27.5].map((f, i) => {
+            nivel.gain.setValueAtTime(0.35 * fuerza, cuando);
+            nivel.gain.exponentialRampToValueAtTime(0.0001, cuando + 0.1);
+            golpe.connect(filtro).connect(nivel);
+            conectar(nivel, 0.2);
+            golpe.start(cuando);
+          }
+
+          /** Golpe metálico pesado (como la armadura de Doom): parciales inarmónicos graves y saturados. */
+          function metal(cuando, volumen = 0.5) {
+            const sat = distorsion(6);
+            const filtro = ctx.createBiquadFilter();
+            filtro.type = 'lowpass';
+            filtro.frequency.setValueAtTime(3200, cuando);
+            filtro.frequency.exponentialRampToValueAtTime(400, cuando + 1.6);
+            const env = ctx.createGain();
+            env.gain.setValueAtTime(0.0001, cuando);
+            env.gain.exponentialRampToValueAtTime(volumen, cuando + 0.006);
+            env.gain.exponentialRampToValueAtTime(0.0001, cuando + 2.2);
+            [73, 151, 233, 347, 529].forEach((f) => {
+              const osc = ctx.createOscillator();
+              osc.type = 'triangle';
+              osc.frequency.value = f;
+              osc.connect(sat);
+              osc.start(cuando);
+              osc.stop(cuando + 2.3);
+            });
+            sat.connect(filtro).connect(env);
+            conectar(env, 0.6);
+            latido(cuando, 0.8);
+          }
+
+          /** Rugido grave disonante que acompaña toda la intro, con un pulso lento. */
+          function iniciarRugido(ahora) {
+            const sat = distorsion(3);
+            const filtro = ctx.createBiquadFilter();
+            filtro.type = 'lowpass';
+            filtro.frequency.value = 140;
+            filtro.Q.value = 4;
+            const nivel = ctx.createGain();
+            nivel.gain.setValueAtTime(0.0001, ahora);
+            nivel.gain.exponentialRampToValueAtTime(0.32, ahora + 1.2);
+            const pulso = ctx.createGain();
+            pulso.gain.value = 0.75;
+            const lfo = ctx.createOscillator();
+            const lfoNivel = ctx.createGain();
+            lfo.frequency.value = 1.6;
+            lfoNivel.gain.value = 0.25;
+            lfo.connect(lfoNivel).connect(pulso.gain);
+            lfo.start(ahora);
+            const oscs = [36.71, 38.89, 18.35].map((f, i) => {
               const osc = ctx.createOscillator();
               osc.type = i === 2 ? 'sine' : 'sawtooth';
               osc.frequency.value = f;
-              osc.connect(filtro);
+              osc.connect(sat);
               osc.start(ahora);
               return osc;
             });
-            filtro.connect(nivel);
-            conectar(nivel, 0.25);
-            zumbido = { filtro, nivel, oscs };
+            sat.connect(filtro).connect(pulso).connect(nivel);
+            conectar(nivel, 0.2);
+            rugido = { filtro, nivel, oscs: [...oscs, lfo], lfo };
           }
 
           function arrancar() {
@@ -460,11 +521,11 @@
             activo = true;
             const ahora = ctx.currentTime + 0.02;
             const pasado = (performance.now() - t0) / 1000;
-            iniciarZumbido(ahora);
-            // Solo suenan las runas y sellos que aún no se han encendido.
+            iniciarRugido(ahora);
+            // Solo suenan los golpes que aún no han pasado en la animación.
             const programar = (segundo, accion) => segundo >= pasado && accion(ahora + segundo - pasado);
-            RUNAS.forEach((f, i) => programar(0.35 + i * 0.1, (t) => campana(t, f, 0.05, 1.4)));
-            SELLOS.forEach((f, i) => programar(0.55 + i * 0.1, (t) => campana(t, f, 0.09, 2.2)));
+            LATIDOS.forEach((s, i) => programar(s, (t) => latido(t, 0.6 + i * 0.12)));
+            programar(GOLPE_SELLOS, (t) => metal(t, 0.45));
             if (fase === 'carga') cargar(0.6);
           }
 
@@ -474,74 +535,116 @@
             promesa.then(() => ctx.state === 'running' && arrancar()).catch(() => {});
           }
 
-          /** El poder se acumula: el zumbido se abre y sube, y un siseo asciende hasta el portal. */
+          /** Carga: el rugido se abre, los latidos aceleran y un siseo oscuro sube hasta el portal. */
           function cargar(segundos) {
             fase = 'carga';
-            if (!activo || !zumbido) return;
+            if (!activo || !rugido) return;
             const ahora = ctx.currentTime;
             const fin = ahora + segundos;
-            zumbido.filtro.frequency.setValueAtTime(zumbido.filtro.frequency.value, ahora);
-            zumbido.filtro.frequency.exponentialRampToValueAtTime(1400, fin);
-            zumbido.nivel.gain.setValueAtTime(zumbido.nivel.gain.value, ahora);
-            zumbido.nivel.gain.linearRampToValueAtTime(0.38, fin);
-            zumbido.oscs.forEach((osc) => osc.frequency.exponentialRampToValueAtTime(osc.frequency.value * 2, fin));
+            rugido.filtro.frequency.setValueAtTime(rugido.filtro.frequency.value, ahora);
+            rugido.filtro.frequency.exponentialRampToValueAtTime(900, fin);
+            rugido.nivel.gain.setValueAtTime(rugido.nivel.gain.value, ahora);
+            rugido.nivel.gain.linearRampToValueAtTime(0.5, fin);
+            rugido.lfo.frequency.setValueAtTime(1.6, ahora);
+            rugido.lfo.frequency.exponentialRampToValueAtTime(14, fin);
+
+            // Latidos cada vez más seguidos (número fijo de golpes: el bucle siempre termina).
+            const GOLPES_CARGA = 7;
+            let t = 0;
+            let paso = segundos * 0.3;
+            for (let i = 0; i < GOLPES_CARGA && t < segundos - 0.04; i++) {
+              latido(ahora + t, 0.55 + (t / segundos) * 0.45);
+              t += Math.max(paso, 0.06);
+              paso *= 0.7;
+            }
 
             const siseo = ruido(segundos + 0.1);
             const banda = ctx.createBiquadFilter();
             banda.type = 'bandpass';
-            banda.Q.value = 1.4;
-            banda.frequency.setValueAtTime(300, ahora);
-            banda.frequency.exponentialRampToValueAtTime(3200, fin);
+            banda.Q.value = 2;
+            banda.frequency.setValueAtTime(120, ahora);
+            banda.frequency.exponentialRampToValueAtTime(1600, fin);
             const nivel = ctx.createGain();
-            nivel.gain.setValueAtTime(0, ahora);
-            nivel.gain.linearRampToValueAtTime(0.28, fin);
+            nivel.gain.setValueAtTime(0.0001, ahora);
+            nivel.gain.exponentialRampToValueAtTime(0.35, fin);
             siseo.connect(banda).connect(nivel);
             conectar(nivel, 0.3);
             siseo.start(ahora);
             siseo.stop(fin + 0.05);
           }
 
-          /** Estallido grave al abrirse el portal, con cola de eco. */
+          /** BRAAAM de tráiler: acorde grave disonante, saturado, que se abre de golpe y se apaga lento. */
+          function braam(cuando, duracion) {
+            const sat = distorsion(8);
+            const filtro = ctx.createBiquadFilter();
+            filtro.type = 'lowpass';
+            filtro.Q.value = 3;
+            filtro.frequency.setValueAtTime(180, cuando);
+            filtro.frequency.exponentialRampToValueAtTime(2200, cuando + 0.12);
+            filtro.frequency.exponentialRampToValueAtTime(320, cuando + duracion);
+            const env = ctx.createGain();
+            env.gain.setValueAtTime(0.0001, cuando);
+            env.gain.exponentialRampToValueAtTime(0.55, cuando + 0.05);
+            env.gain.setValueAtTime(0.55, cuando + duracion * 0.35);
+            env.gain.exponentialRampToValueAtTime(0.0001, cuando + duracion);
+            ACORDE_BRAAM.forEach((f) =>
+              [-6, 6].forEach((desafine) => {
+                const osc = ctx.createOscillator();
+                osc.type = 'sawtooth';
+                osc.frequency.value = f;
+                osc.detune.value = desafine;
+                osc.connect(sat);
+                osc.start(cuando);
+                osc.stop(cuando + duracion + 0.05);
+              }),
+            );
+            sat.connect(filtro).connect(env);
+            conectar(env, 0.45);
+          }
+
+          /** Portal: BRAAAM + caída sub-grave + impacto, con cola de eco. */
           function estallar() {
             fase = 'fin';
             if (!activo) return;
             const ahora = ctx.currentTime;
-            if (zumbido) {
-              zumbido.nivel.gain.cancelScheduledValues(ahora);
-              zumbido.nivel.gain.setValueAtTime(zumbido.nivel.gain.value, ahora);
-              zumbido.nivel.gain.exponentialRampToValueAtTime(0.0001, ahora + 1.2);
-              zumbido.oscs.forEach((osc) => osc.stop(ahora + 1.3));
+            if (rugido) {
+              rugido.nivel.gain.cancelScheduledValues(ahora);
+              rugido.nivel.gain.setValueAtTime(rugido.nivel.gain.value, ahora);
+              rugido.nivel.gain.exponentialRampToValueAtTime(0.0001, ahora + 0.4);
+              rugido.oscs.forEach((osc) => osc.stop(ahora + 0.5));
             }
-            const golpe = ctx.createOscillator();
-            const golpeNivel = ctx.createGain();
-            golpe.type = 'sine';
-            golpe.frequency.setValueAtTime(120, ahora);
-            golpe.frequency.exponentialRampToValueAtTime(30, ahora + 0.8);
-            golpeNivel.gain.setValueAtTime(0.95, ahora);
-            golpeNivel.gain.exponentialRampToValueAtTime(0.0001, ahora + 1.8);
-            golpe.connect(golpeNivel);
-            conectar(golpeNivel, 0.4);
-            golpe.start(ahora);
-            golpe.stop(ahora + 1.9);
+            braam(ahora, 2.8);
+            metal(ahora, 0.35);
 
-            const rafaga = ruido(1.2);
-            const grave = ctx.createBiquadFilter();
-            grave.type = 'lowpass';
-            grave.frequency.setValueAtTime(2400, ahora);
-            grave.frequency.exponentialRampToValueAtTime(200, ahora + 1);
-            const rafagaNivel = ctx.createGain();
-            rafagaNivel.gain.setValueAtTime(0.5, ahora);
-            rafagaNivel.gain.exponentialRampToValueAtTime(0.0001, ahora + 1.1);
-            rafaga.connect(grave).connect(rafagaNivel);
-            conectar(rafagaNivel, 0.8);
-            rafaga.start(ahora);
-            campana(ahora + 0.05, 130.8, 0.12, 3);
+            const sub = ctx.createOscillator();
+            const subNivel = ctx.createGain();
+            sub.type = 'sine';
+            sub.frequency.setValueAtTime(70, ahora);
+            sub.frequency.exponentialRampToValueAtTime(24, ahora + 1.6);
+            subNivel.gain.setValueAtTime(0.9, ahora);
+            subNivel.gain.exponentialRampToValueAtTime(0.0001, ahora + 2.4);
+            sub.connect(subNivel);
+            conectar(subNivel, 0.2);
+            sub.start(ahora);
+            sub.stop(ahora + 2.5);
+
+            const impacto = ruido(1.5);
+            const filtro = ctx.createBiquadFilter();
+            filtro.type = 'lowpass';
+            filtro.frequency.setValueAtTime(1800, ahora);
+            filtro.frequency.exponentialRampToValueAtTime(120, ahora + 1.3);
+            const nivel = ctx.createGain();
+            nivel.gain.setValueAtTime(0.6, ahora);
+            nivel.gain.exponentialRampToValueAtTime(0.0001, ahora + 1.4);
+            impacto.connect(filtro).connect(nivel);
+            conectar(nivel, 0.7);
+            impacto.start(ahora);
           }
 
           /** Libera el audio cuando termina la cola del estallido. */
           function cerrar() {
             fase = 'fin';
-            setTimeout(() => ctx.close().catch(() => {}), activo ? 3200 : 0);
+            setTimeout(() => ctx.close().catch(() => {}), activo ? 3800 : 0);
           }
 
           return { intentar, cargar, estallar, cerrar };
