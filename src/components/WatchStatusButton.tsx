@@ -2,11 +2,10 @@ import { AnimatePresence, motion } from 'motion/react';
 import { Check, Plus, RotateCcw, SkipForward } from 'lucide-react';
 import { useProgress } from '../hooks/useProgress';
 import type { WatchStatus } from '../types';
-import { STATUS_LABEL } from './StatusBadge';
 
 type Props = {
   id: string;
-  variant?: 'primary' | 'segmented' | 'icon';
+  variant?: 'primary' | 'toggles' | 'icon';
   className?: string;
 };
 
@@ -14,14 +13,14 @@ const NEXT_STATUS: Record<WatchStatus, WatchStatus> = { pending: 'watched', watc
 
 /**
  * - primary: botón principal "Marcar como vista" / "Vista" (un clic alterna).
- * - segmented: selector de los tres estados.
+ * - toggles: botones redondos de vista / saltada (fichas).
  * - icon: botón circular compacto para tarjetas.
  */
 export function WatchStatusButton({ id, variant = 'primary', className = '' }: Props) {
   const { getStatus, setStatus } = useProgress();
   const status = getStatus(id);
 
-  if (variant === 'segmented') return <Segmented id={id} status={status} onChange={(s) => setStatus(id, s)} className={className} />;
+  if (variant === 'toggles') return <StatusToggles status={status} onChange={(s) => setStatus(id, s)} />;
 
   if (variant === 'icon') {
     const isWatched = status === 'watched';
@@ -74,49 +73,60 @@ export function WatchStatusButton({ id, variant = 'primary', className = '' }: P
   );
 }
 
-function Segmented({
-  id,
-  status,
-  onChange,
-  className,
-}: {
-  id: string;
-  status: WatchStatus;
-  onChange: (s: WatchStatus) => void;
-  className: string;
-}) {
-  const options: { value: WatchStatus; icon: typeof Check }[] = [
-    { value: 'pending', icon: Plus },
-    { value: 'watched', icon: Check },
-    { value: 'skipped', icon: SkipForward },
-  ];
+type ToggleProps = {
+  label: string;
+  isActive: boolean;
+  activeClass: string;
+  onClick: () => void;
+  children: React.ReactNode;
+};
+
+/** Botón circular estilo Disney+ con etiqueta flotante al pasar el ratón o enfocar. */
+function RoundToggle({ label, isActive, activeClass, onClick, children }: ToggleProps) {
   return (
-    <div role="radiogroup" aria-label="Estado de visualización" className={`relative inline-flex rounded-md bg-snow/8 p-1 ${className}`}>
-      {options.map(({ value, icon: Icon }) => {
-        const isActive = status === value;
-        return (
-          <button
-            key={value}
-            type="button"
-            role="radio"
-            aria-checked={isActive}
-            onClick={() => onChange(value)}
-            className={`relative z-10 inline-flex h-9 items-center gap-1.5 rounded px-3 text-xs font-semibold transition-colors ${
-              isActive ? 'text-ink' : 'text-mist hover:text-snow'
-            }`}
-          >
-            {isActive && (
-              <motion.span
-                layoutId={`seg-${id}`}
-                className={`absolute inset-0 -z-10 rounded ${value === 'watched' ? 'bg-watched' : value === 'skipped' ? 'bg-skipped' : 'bg-snow'}`}
-                transition={{ type: 'spring', stiffness: 500, damping: 38 }}
-              />
-            )}
-            <Icon className="size-3.5" />
-            {STATUS_LABEL[value]}
-          </button>
-        );
-      })}
+    <motion.button
+      type="button"
+      whileTap={{ scale: 0.9 }}
+      onClick={onClick}
+      aria-pressed={isActive}
+      aria-label={label}
+      className={`group relative grid size-12 place-items-center rounded-full border-2 transition-colors ${
+        isActive ? activeClass : 'border-snow/50 bg-ink/40 text-snow hover:border-snow hover:bg-snow/10'
+      }`}
+    >
+      {children}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded bg-snow px-2 py-1 text-[11px] font-semibold text-ink opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+      >
+        {label}
+      </span>
+    </motion.button>
+  );
+}
+
+/** Dos botones redondos: vista / saltada. Volver a pulsar devuelve el título a pendiente. */
+function StatusToggles({ status, onChange }: { status: WatchStatus; onChange: (s: WatchStatus) => void }) {
+  const isWatched = status === 'watched';
+  const isSkipped = status === 'skipped';
+  return (
+    <div role="group" aria-label="Estado de visualización" className="flex items-center gap-3">
+      <RoundToggle
+        label={isWatched ? 'Quitar de vistas' : 'Marcar como vista'}
+        isActive={isWatched}
+        activeClass="border-watched bg-watched text-ink"
+        onClick={() => onChange(isWatched ? 'pending' : 'watched')}
+      >
+        <Check className="size-5" strokeWidth={isWatched ? 3 : 2} />
+      </RoundToggle>
+      <RoundToggle
+        label={isSkipped ? 'Recuperar (volver a pendiente)' : 'Saltar este título'}
+        isActive={isSkipped}
+        activeClass="border-skipped bg-skipped text-ink"
+        onClick={() => onChange(isSkipped ? 'pending' : 'skipped')}
+      >
+        {isSkipped ? <RotateCcw className="size-5" /> : <SkipForward className="size-5" />}
+      </RoundToggle>
     </div>
   );
 }

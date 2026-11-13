@@ -100,32 +100,38 @@ function DetailContent({ title, onClose, onOpen }: { title: Title; onClose: () =
           <PriorityMark priority={title.priority} className="ml-1" />
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          {disneyPlus && (
+        {/* Acciones: reproducir (principal) + estado en botones redondos, y "siguiente" a la derecha */}
+        <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-4">
+          {disneyPlus ? (
             <a
               href={disneyPlus}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-12 items-center gap-2.5 rounded-md bg-[#0063e5] px-5 text-sm font-semibold uppercase tracking-[0.1em] text-white shadow-[0_8px_24px_-8px_rgba(0,99,229,0.7)] transition-colors hover:bg-[#0483ee]"
+              className="inline-flex h-12 flex-1 items-center justify-center gap-2.5 whitespace-nowrap rounded-md bg-[#0063e5] px-4 text-sm font-semibold uppercase tracking-[0.08em] text-white sm:px-6 sm:tracking-[0.12em] shadow-[0_10px_28px_-10px_rgba(0,99,229,0.8)] transition-colors hover:bg-[#0483ee] sm:flex-none"
             >
               <Play className="size-4 fill-current" />
               Ver en Disney+
-              <ExternalLink className="size-3.5 opacity-70" aria-hidden />
+              <ExternalLink className="size-3.5 opacity-70 max-[380px]:hidden" aria-hidden />
               <span className="sr-only">(se abre en una pestaña nueva)</span>
             </a>
+          ) : (
+            <WatchStatusButton id={title.id} />
           )}
-          <WatchStatusButton id={title.id} />
-          <WatchStatusButton id={title.id} variant="segmented" />
+          <WatchStatusButton id={title.id} variant="toggles" />
           {next && (
             <button
               type="button"
               onClick={() => onOpen(next.id)}
-              className="group inline-flex h-12 items-center gap-2 rounded-md px-4 text-sm font-semibold text-snow ring-1 ring-white/15 transition-colors hover:bg-snow/8 sm:ml-auto"
+              className="group inline-flex min-w-0 max-w-full items-center gap-3 rounded-md py-1.5 pl-1.5 pr-3 text-left text-sm transition-colors hover:bg-snow/8 max-sm:w-full sm:ml-auto"
             >
-              <span className="max-w-[16rem] truncate">
-                <span className="text-fog">Siguiente:</span> {next.title}
+              {getMedia(next.id).poster && (
+                <img src={getMedia(next.id).poster} alt="" className="h-12 w-8 shrink-0 rounded-sm object-cover ring-1 ring-white/10" />
+              )}
+              <span className="min-w-0">
+                <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-fog">Siguiente</span>
+                <span className="block truncate font-semibold text-snow">{next.title}</span>
               </span>
-              <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+              <ArrowRight className="ml-auto size-4 shrink-0 text-mist transition-transform group-hover:translate-x-0.5 group-hover:text-snow" />
             </button>
           )}
         </div>
