@@ -94,21 +94,13 @@
       .doom-intro__sello:nth-of-type(4) { animation-delay: .85s; }
       .doom-intro__sello:nth-of-type(5) { animation-delay: .95s; }
       .doom-intro__sello:nth-of-type(6) { animation-delay: 1.05s; }
-      /* Implosión: la energía se concentra antes de abrir el portal */
-      .doom-intro__implosion {
-        position: absolute; inset: 18%; border-radius: 50%; opacity: 0;
-        border: 2px solid rgba(61, 220, 132, .8);
-        box-shadow: 0 0 26px rgba(61, 220, 132, .55), inset 0 0 26px rgba(61, 220, 132, .35);
-      }
 
       /* Carga: el poder de Doom se acumula justo antes del portal */
-      .doom-intro--cargando .doom-intro__marca { animation: doom-temblor .07s linear infinite; }
-      .doom-intro--cargando .doom-intro__runas { animation: doom-cargar .9s cubic-bezier(.5, 0, .9, .5) forwards; }
-      .doom-intro--cargando .doom-intro__marca::before { animation: doom-luz-carga .9s ease-in forwards; }
-      .doom-intro--cargando .doom-intro__implosion { animation: doom-implosion .9s cubic-bezier(.5, 0, .9, .5) forwards; }
+      .doom-intro--cargando .doom-intro__runas { animation: doom-cargar .7s ease-in-out forwards; }
+      .doom-intro--cargando .doom-intro__marca::before { animation: doom-luz-carga .7s ease-in-out forwards; }
       .doom-intro--cargando .doom-intro__sello circle { fill: var(--doom-verde); }
       .doom-intro--cargando .doom-intro__sello text { fill: #07120c; }
-      .doom-intro--cargando .doom-intro__titulo span { animation: doom-titulo-carga .9s ease-in forwards; }
+      .doom-intro--cargando .doom-intro__titulo span { animation: doom-titulo-carga .7s ease-in-out forwards; }
       /* Ondas de energía */
       .doom-intro__onda {
         position: absolute; inset: 18%;
@@ -167,13 +159,13 @@
       .doom-intro--portal.doom-intro--saliendo {
         -webkit-mask-image: radial-gradient(circle at 50% var(--doom-centro), transparent var(--doom-radio), #000 calc(var(--doom-radio) + 2px));
         mask-image: radial-gradient(circle at 50% var(--doom-centro), transparent var(--doom-radio), #000 calc(var(--doom-radio) + 2px));
-        animation: doom-abrir 1s cubic-bezier(.7, .04, .22, 1) both;
+        animation: doom-abrir 1.1s cubic-bezier(.45, 0, .2, 1) both;
       }
       .doom-intro__borde {
         position: absolute; left: 50%; top: var(--doom-centro);
         width: calc(var(--doom-radio) * 2); aspect-ratio: 1; translate: -50% -50%;
         border-radius: 50%; pointer-events: none; opacity: 0;
-        box-shadow: 0 0 0 2px rgba(61, 220, 132, .9), 0 0 30px 8px rgba(61, 220, 132, .55), inset 0 0 30px 6px rgba(61, 220, 132, .35);
+        box-shadow: 0 0 0 1.5px rgba(61, 220, 132, .7), 0 0 22px 4px rgba(61, 220, 132, .35), inset 0 0 22px 4px rgba(61, 220, 132, .2);
       }
       .doom-intro--portal.doom-intro--saliendo .doom-intro__borde { opacity: 1; }
       .doom-intro--saliendo .doom-intro__marca { animation: doom-retirar .7s ease both; }
@@ -203,26 +195,16 @@
         100% { fill-opacity: 1; fill: var(--doom-verde); }
       }
       @keyframes doom-sello { 0% { opacity: 0; } 50% { opacity: 1; filter: brightness(2.5); } 100% { opacity: 1; filter: none; } }
-      @keyframes doom-temblor {
-        0%, 100% { transform: translate(0, 0); }
-        25% { transform: translate(-1.5px, 1px); }
-        50% { transform: translate(1.5px, -1px); }
-        75% { transform: translate(-1px, -1.5px); }
-      }
       @keyframes doom-cargar {
         0% { opacity: .85; scale: 1; rotate: 0deg; }
-        100% { opacity: 1; scale: .92; rotate: 160deg; }
+        100% { opacity: 1; scale: .97; rotate: 35deg; }
       }
       @keyframes doom-luz-carga {
         from { opacity: 1; scale: 1; filter: brightness(1); }
-        to { opacity: 1; scale: 1.3; filter: brightness(2.2); }
-      }
-      @keyframes doom-implosion {
-        0% { opacity: 0; transform: scale(2.4); }
-        100% { opacity: .95; transform: scale(.75); }
+        to { opacity: 1; scale: 1.1; filter: brightness(1.35); }
       }
       @keyframes doom-titulo-carga {
-        to { filter: brightness(1.7) drop-shadow(0 0 8px #3ddc84) drop-shadow(0 0 22px #3ddc84); }
+        to { filter: brightness(1.2) drop-shadow(0 0 10px rgba(61, 220, 132, .7)) drop-shadow(0 2px 0 #04140b); }
       }
       @media (prefers-reduced-motion: reduce) { .doom-intro { display: none; } }
     </style>
@@ -263,7 +245,6 @@
         </div>
         <span class="doom-intro__onda"></span>
         <span class="doom-intro__onda doom-intro__onda--roja"></span>
-        <span class="doom-intro__implosion"></span>
         <div class="doom-intro__firma">
           <p class="doom-intro__titulo"><span>Doomsday</span></p>
           <p class="doom-intro__cuenta" id="doom-intro-cuenta"></p>
@@ -314,7 +295,7 @@
 
         const MINIMO_MS = 1900;
         const MAXIMO_MS = 3000;
-        const CARGA_MS = 900;
+        const CARGA_MS = 700;
         const sonido = crearSonidoDoom();
         const app = document.getElementById('root');
         const inicio = performance.now();
@@ -341,7 +322,7 @@
           setTimeout(salir, Math.max(0, MINIMO_MS - (performance.now() - inicio)));
         }
 
-        // Primero el poder se acumula (temblor, runas aceleradas, implosión) y luego se abre el portal.
+        // Primero el círculo se carga (runas que aceleran y brillo que sube) y luego se abre el portal.
         function salir() {
           document.removeEventListener('doomsday:lista', lista);
           intro.classList.add('doom-intro--cargando');
